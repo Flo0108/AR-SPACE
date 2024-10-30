@@ -1,0 +1,19 @@
+{
+  "name": "your-project-name",
+  "version": "1.0.0",
+  "description": "A simple Node.js application.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^4.0.1"
+  },
+  "engines": {
+    "node": "16.x"
+  },
+  "author": "Your Name",
+  "license": "MIT"
+}
