@@ -1,8 +1,9 @@
+<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Multiplayer VR Environment</title>
+    <title>Multiplayer VR Sample</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/nipplejs/dist/nipplejs.css" />
@@ -18,28 +19,15 @@
     </style>
 </head>
 <body>
-    <a-scene fog="type: linear; color: #AAB7B8; near: 10; far: 50">
-        <a-assets>
-            <img id="groundTexture" src="path/to/ground-texture.jpg">
-            <img id="skyTexture" src="path/to/skybox.jpg">
-        </a-assets>
-
-        <!-- Sky and Lighting -->
-        <a-sky src="#skyTexture"></a-sky>
-        <a-light type="ambient" color="#888"></a-light>
-        <a-light type="directional" position="10 10 0" intensity="0.8"></a-light>
-
-        <!-- Ground Plane -->
-        <a-plane rotation="-90 0 0" width="30" height="30" src="#groundTexture" repeat="10 10"></a-plane>
-
-        <!-- Load the Test model -->
-        <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
-
+    <a-scene>
         <!-- Player template -->
         <a-entity id="player" position="0 1.6 0">
             <a-camera></a-camera>
-            <a-text value="You" position="0 0.5 0" color="#FFFFFF"></a-text>
         </a-entity>
+        <!-- Ground -->
+        <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
+        <!-- Load the model -->
+        <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
     </a-scene>
 
     <div id="joystick"></div>
@@ -63,7 +51,7 @@
             const x = data.vector.x;
             const y = data.vector.y;
 
-            // Calculate new camera position based on joystick input
+            // Calculate the new camera position based on joystick input
             const cameraPos = camera.getAttribute('position');
 
             // Update camera position based on joystick input
