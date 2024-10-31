@@ -3,96 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR Space</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <style>
-        body { margin: 0; }
-        canvas { display: none; } /* Hide the default canvas */
-    </style>
+    <title>Your VR Multiplayer App</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io('https://your-app-name.onrender.com'); // Replace with your actual Render URL
+
+        // Handle new players
+        socket.on('currentPlayers', (players) => {
+            console.log('Current players:', players);
+            // Update your game state with current players
+        });
+
+        socket.on('newPlayer', (playerData) => {
+            console.log('New player joined:', playerData);
+            // Add the new player to your game
+        });
+
+        socket.on('move', (data) => {
+            console.log('Player moved:', data);
+            // Update the moved player's position in your game
+        });
+
+        socket.on('removePlayer', (playerId) => {
+            console.log('Player disconnected:', playerId);
+            // Remove the player from your game
+        });
+
+        // Example function to move a player
+        function movePlayer(newPosition) {
+            socket.emit('move', newPosition); // Emit the player's new position
+        }
+    </script>
 </head>
 <body>
-    <a-scene>
-        <a-entity id="camera" camera position="0 1.6 0" look-controls></a-entity>
-        <a-entity id="light" light="type: directional; intensity: 0.5"></a-entity>
-        
-        <!-- Player Sphere -->
-        <a-sphere id="player" radius="0.2" color="#4CC3D9" position="0 1.6 0"></a-sphere>
-
-        <!-- Ground -->
-        <a-plane rotation="-90 0 0" width="10" height="10" color="#7BC8A4"></a-plane>
-
-        <!-- Add more entities or features here as needed -->
-    </a-scene>
-
-    <script>
-        const socket = io('https://ar-space.onrender.com'); // Update this with your actual Render URL
-        const players = {};
-
-        // Handle current players
-        socket.on('currentPlayers', (currentPlayers) => {
-            Object.keys(currentPlayers).forEach((id) => {
-                addPlayer(id, currentPlayers[id]);
-            });
-        });
-
-        // Handle new player
-        socket.on('newPlayer', (playerData) => {
-            addPlayer(playerData.id, playerData.position);
-        });
-
-        // Handle player movement
-        socket.on('move', (playerData) => {
-            if (players[playerData.id]) {
-                players[playerData.id].setAttribute('position', playerData.position);
-            }
-        });
-
-        // Handle player removal
-        socket.on('removePlayer', (id) => {
-            if (players[id]) {
-                players[id].remove();
-                delete players[id];
-            }
-        });
-
-        function addPlayer(id, position) {
-            const playerEl = document.createElement('a-sphere');
-            playerEl.setAttribute('id', id);
-            playerEl.setAttribute('radius', '0.2');
-            playerEl.setAttribute('color', '#4CC3D9');
-            playerEl.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
-            document.querySelector('a-scene').appendChild(playerEl);
-            players[id] = playerEl;
-        }
-
-        // Update player position
-        document.addEventListener('keydown', (event) => {
-            const position = players[socket.id]?.getAttribute('position');
-            if (!position) return;
-
-            let newPosition = { ...position };
-
-            switch (event.key) {
-                case 'ArrowUp':
-                    newPosition.z -= 0.1; // Move forward
-                    break;
-                case 'ArrowDown':
-                    newPosition.z += 0.1; // Move backward
-                    break;
-                case 'ArrowLeft':
-                    newPosition.x -= 0.1; // Move left
-                    break;
-                case 'ArrowRight':
-                    newPosition.x += 0.1; // Move right
-                    break;
-                default:
-                    return; // Exit this handler for other keys
-            }
-
-            players[socket.id].setAttribute('position', newPosition);
-            socket.emit('move', newPosition); // Emit the new position to the server
-        });
-    </script>
+    <h1>Welcome to Your VR Multiplayer App</h1>
+    <!-- Your VR scene or elements go here -->
 </body>
 </html>
