@@ -1,69 +1,104 @@
-<!-- public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Multiplayer VR Sample</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multiplayer VR App</title>
     <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
 </head>
 <body>
-    <a-scene>
-        <!-- Player template -->
-        <a-entity id="player" position="0 1.6 0">
-            <a-camera></a-camera>
-        </a-entity>
-        <!-- Ground -->
-        <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
-    </a-scene>
-
     <script>
-        const socket = io('https://ar-space.onrender.com'); // Replace with your actual Host URL - NOW ON RENDER
+        const socket = io('https://ar-space.onrender.com'); // Replace with your actual Render URL
 
-        let players = {};
-        const player = document.getElementById('player');
+        let playerPosition = { x: 0, y: 1.6, z: 0 }; // Initial position
+        const moveSpeed = 0.1; // Define how fast the player moves
+        const players = {}; // Object to store player representations
 
-        // Receive current players when joining
-        socket.on('currentPlayers', (currentPlayers) => {
-            players = currentPlayers;
-            Object.keys(players).forEach(id => {
-                if (id !== socket.id) addPlayer(id, players[id]);
-            });
+        // Listen for keydown events to move the player
+        document.addEventListener('keydown', (event) => {
+            switch (event.key) {
+                case 'ArrowUp':
+                    playerPosition.z -= moveSpeed; // Move forward
+                    break;
+                case 'ArrowDown':
+                    playerPosition.z += moveSpeed; // Move backward
+                    break;
+                case 'ArrowLeft':
+                    playerPosition.x -= moveSpeed; // Move left
+                    break;
+                case 'ArrowRight':
+                    playerPosition.x += moveSpeed; // Move right
+                    break;
+            }
+
+            // Emit the new position to the server
+            socket.emit('move', playerPosition);
         });
 
-        // Add new player
-        socket.on('newPlayer', (data) => addPlayer(data.id, data.position));
-
-        // Remove player
-        socket.on('removePlayer', (id) => {
-            const player = document.getElementById(id);
-            if (player) player.remove();
+        // When a new player connects
+        socket.on('currentPlayers', (initialPlayers) => {
+            for (const id in initialPlayers) {
+                if (initialPlayers.hasOwnProperty(id)) {
+                    addPlayer(id, initialPlayers[id]); // Add existing players
+                }
+            }
         });
 
-        // Move existing player
+        // When a new player joins
+        socket.on('newPlayer', (playerData) => {
+            addPlayer(playerData.id, playerData.position); // Add new player to the scene
+        });
+
+        // When a player moves
         socket.on('move', (data) => {
-            const otherPlayer = document.getElementById(data.id);
-            if (otherPlayer) otherPlayer.setAttribute('position', data.position);
+            if (players[data.id]) {
+                updatePlayerPosition(data.id, data.position); // Update position in the scene
+            }
         });
 
-        // Helper to add a player
+        // When a player disconnects
+        socket.on('removePlayer', (playerId) => {
+            removePlayer(playerId); // Remove player from the scene
+        });
+
+        // Example functions to handle player representations
         function addPlayer(id, position) {
-            const el = document.createElement('a-sphere');
-            el.setAttribute('id', id);
-            el.setAttribute('position', position);
-            el.setAttribute('radius', 0.3);
-            el.setAttribute('color', '#FF0000');
-            document.querySelector('a-scene').appendChild(el);
+            // Create and render the player representation (you might want to replace this with your actual rendering logic)
+            players[id] = createPlayerAvatar(position); // Implement createPlayerAvatar to handle rendering
         }
 
-        // Send movement data
-        function sendMove() {
-            const pos = player.getAttribute('position');
-            socket.emit('move', pos);
+        function updatePlayerPosition(id, position) {
+            if (players[id]) {
+                players[id].position.set(position.x, position.y, position.z); // Update 3D position
+            }
         }
 
-        // Update position periodically
-        setInterval(sendMove, 50);
+        function removePlayer(id) {
+            if (players[id]) {
+                players[id].remove(); // Remove player representation from the scene
+                delete players[id]; // Remove from the players object
+            }
+        }
+
+        function createPlayerAvatar(position) {
+            // Replace with your actual rendering logic for creating the player's avatar
+            const playerAvatar = document.createElement('div');
+            playerAvatar.style.position = 'absolute';
+            playerAvatar.style.width = '50px';
+            playerAvatar.style.height = '50px';
+            playerAvatar.style.backgroundColor = 'blue'; // Example color for the player
+            playerAvatar.style.borderRadius = '50%'; // Make it circular
+            document.body.appendChild(playerAvatar);
+
+            // Positioning logic based on 3D coordinates (simple 2D for demonstration)
+            playerAvatar.style.transform = `translate(${position.x * 50}px, ${position.z * 50}px)`; // Scale for visibility
+
+            return playerAvatar;
+        }
     </script>
 </body>
 </html>
