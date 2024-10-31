@@ -6,6 +6,17 @@
     <title>Multiplayer VR Sample</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/nipplejs/dist/nipplejs.css" />
+    <script src="https://unpkg.com/nipplejs/dist/nipplejs.js"></script>
+    <style>
+        #joystick {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+        }
+    </style>
 </head>
 <body>
     <a-scene>
@@ -15,14 +26,43 @@
         </a-entity>
         <!-- Ground -->
         <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
+        <!-- Load the model -->
+        <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
     </a-scene>
+
+    <div id="joystick"></div>
 
     <script>
         const socket = io(window.location.origin);
-
         let players = {};
         const player = document.getElementById('player');
         const camera = player.querySelector('a-camera');
+
+        // Joystick setup
+        const joystick = nipplejs.create({
+            zone: document.getElementById('joystick'),
+            mode: 'static',
+            position: { left: '50%', bottom: '50%' },
+            size: 100,
+            color: 'blue'
+        });
+
+        joystick.on('move', (evt, data) => {
+            const x = data.vector.x;
+            const y = data.vector.y;
+
+            // Calculate the new camera position based on joystick input
+            const cameraPos = camera.getAttribute('position');
+
+            // Update camera position based on joystick input
+            camera.setAttribute('position', {
+                x: cameraPos.x + x * 0.1, // Move left/right
+                y: 1.6, // Keep height constant
+                z: cameraPos.z - y * 0.1 // Move forward/backward
+            });
+
+            sendMove(camera.getAttribute('position')); // Send updated position to server
+        });
 
         // Receive current players when joining
         socket.on('currentPlayers', (currentPlayers) => {
@@ -67,20 +107,16 @@
             document.querySelector('a-scene').appendChild(el);
         }
 
-        // Update player position based on camera position
-        function updatePlayerPosition() {
-            const pos = camera.getAttribute('position'); // Get the camera position
-            player.setAttribute('position', pos); // Update player entity's position
-            sendMove(pos); // Send new position to server
-        }
-
         // Send movement data
         function sendMove(position) {
             socket.emit('move', { position: position });
         }
 
         // Update position every 100 milliseconds
-        setInterval(updatePlayerPosition, 100);
+        setInterval(() => {
+            const pos = camera.getAttribute('position'); // Get the camera position
+            player.setAttribute('position', pos); // Update player entity's position
+        }, 100);
     </script>
 </body>
 </html>
