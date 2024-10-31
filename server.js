@@ -9,27 +9,30 @@ const io = socketIo(server);
 // Serve static files from the public directory
 app.use(express.static(__dirname + '/public'));
 
-// Store connected players
+// Store connected players and their names
 let players = {};
+const playerNames = ['Trump', 'Hillary', 'Biden'];
+let nameIndex = 0; // To keep track of the next available name
 
-// Handle socket connections
 io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
 
-    // Add new player to the list
-    players[socket.id] = { x: 0, y: 1.6, z: 0 };  // initial position
+    // Assign a name to the player if available
+    const playerName = playerNames[nameIndex % playerNames.length];
+    players[socket.id] = { name: playerName, x: 0, y: 1.6, z: 0 }; // Add name to player data
+    nameIndex++; // Move to the next name for the next player
 
     // Send current players to the new player
     socket.emit('currentPlayers', players);
 
     // Notify others of new player
-    socket.broadcast.emit('newPlayer', { id: socket.id, position: players[socket.id] });
+    socket.broadcast.emit('newPlayer', { id: socket.id, name: playerName, position: players[socket.id] });
 
     // Handle movement updates
     socket.on('move', (data) => {
         if (players[socket.id]) {
-            players[socket.id] = data;
-            socket.broadcast.emit('move', { id: socket.id, position: data });
+            players[socket.id] = { ...players[socket.id], ...data }; // Update position without losing name
+            socket.broadcast.emit('move', { id: socket.id, position: players[socket.id] });
         }
     });
 

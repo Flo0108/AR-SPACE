@@ -19,7 +19,6 @@
 
     <script>
         const socket = io();
-
         let players = {};
         const player = document.getElementById('player');
 
@@ -32,28 +31,40 @@
         });
 
         // Add new player
-        socket.on('newPlayer', (data) => addPlayer(data.id, data.position));
+        socket.on('newPlayer', (data) => addPlayer(data.id, data));
 
         // Remove player
         socket.on('removePlayer', (id) => {
             const player = document.getElementById(id);
+            const nameLabel = document.getElementById(`name-${id}`); // Get the name label
             if (player) player.remove();
+            if (nameLabel) nameLabel.remove(); // Remove the name label too
         });
 
         // Move existing player
         socket.on('move', (data) => {
             const otherPlayer = document.getElementById(data.id);
-            if (otherPlayer) otherPlayer.setAttribute('position', data.position);
+            if (otherPlayer) {
+                otherPlayer.setAttribute('position', data.position);
+            }
         });
 
         // Helper to add a player
-        function addPlayer(id, position) {
+        function addPlayer(id, playerData) {
             const el = document.createElement('a-sphere');
             el.setAttribute('id', id);
-            el.setAttribute('position', position);
+            el.setAttribute('position', playerData.position);
             el.setAttribute('radius', 0.3);
             el.setAttribute('color', '#FF0000');
             document.querySelector('a-scene').appendChild(el);
+
+            // Add name as text
+            const nameEl = document.createElement('a-text');
+            nameEl.setAttribute('id', `name-${id}`); // Unique ID for name label
+            nameEl.setAttribute('value', playerData.name);
+            nameEl.setAttribute('position', `${playerData.position.x} ${playerData.position.y + 0.5} ${playerData.position.z}`);
+            nameEl.setAttribute('align', 'center');
+            document.querySelector('a-scene').appendChild(nameEl);
         }
 
         // Send movement data
