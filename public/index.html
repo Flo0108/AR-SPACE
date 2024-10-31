@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Multiplayer VR Sample</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <!-- Ensure the socket.io script loads from the correct path -->
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
@@ -18,9 +19,12 @@
     </a-scene>
 
     <script>
-        const socket = io();
+        // Connect to socket.io using the current window location
+        const socket = io(window.location.origin);
+
         let players = {};
         const player = document.getElementById('player');
+        const camera = player.querySelector('a-camera');
 
         // Receive current players when joining
         socket.on('currentPlayers', (currentPlayers) => {
@@ -31,14 +35,12 @@
         });
 
         // Add new player
-        socket.on('newPlayer', (data) => addPlayer(data.id, data));
+        socket.on('newPlayer', (data) => addPlayer(data.id, data.position));
 
         // Remove player
         socket.on('removePlayer', (id) => {
             const player = document.getElementById(id);
-            const nameLabel = document.getElementById(`name-${id}`); // Get the name label
             if (player) player.remove();
-            if (nameLabel) nameLabel.remove(); // Remove the name label too
         });
 
         // Move existing player
@@ -50,31 +52,37 @@
         });
 
         // Helper to add a player
-        function addPlayer(id, playerData) {
+        function addPlayer(id, position) {
             const el = document.createElement('a-sphere');
             el.setAttribute('id', id);
-            el.setAttribute('position', playerData.position);
+            el.setAttribute('position', position);
             el.setAttribute('radius', 0.3);
             el.setAttribute('color', '#FF0000');
-            document.querySelector('a-scene').appendChild(el);
 
-            // Add name as text
+            // Create a text element to display the player's name
             const nameEl = document.createElement('a-text');
-            nameEl.setAttribute('id', `name-${id}`); // Unique ID for name label
-            nameEl.setAttribute('value', playerData.name);
-            nameEl.setAttribute('position', `${playerData.position.x} ${playerData.position.y + 0.5} ${playerData.position.z}`);
-            nameEl.setAttribute('align', 'center');
-            document.querySelector('a-scene').appendChild(nameEl);
+            nameEl.setAttribute('value', id); // Set the player's ID as the name
+            nameEl.setAttribute('position', '0 0.5 0'); // Position above the sphere
+            nameEl.setAttribute('color', '#FFFFFF');
+
+            el.appendChild(nameEl);
+            document.querySelector('a-scene').appendChild(el);
+        }
+
+        // Function to update the player's position based on camera
+        function updatePlayerPosition() {
+            const pos = camera.getAttribute('position'); // Get the camera position
+            player.setAttribute('position', pos); // Update player entity's position
+            sendMove(pos); // Send new position to server
         }
 
         // Send movement data
-        function sendMove() {
-            const pos = player.getAttribute('position');
-            socket.emit('move', pos);
+        function sendMove(position) {
+            socket.emit('move', { position: position });
         }
 
-        // Update position periodically
-        setInterval(sendMove, 50);
+        // Update position every 100 milliseconds
+        setInterval(updatePlayerPosition, 100);
     </script>
 </body>
 </html>
