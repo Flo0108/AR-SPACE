@@ -3,40 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your VR Multiplayer App</title>
+    <title>VR Space</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io('https://your-app-name.onrender.com'); // Replace with your actual Render URL
+    <style>
+        body { margin: 0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <a-scene>
+        <a-entity id="player" geometry="primitive: sphere; radius: 0.5" material="color: blue" position="0 1.6 0"></a-entity>
+    </a-scene>
 
-        // Handle new players
+    <script>
+        const socket = io();
+
         socket.on('currentPlayers', (players) => {
-            console.log('Current players:', players);
-            // Update your game state with current players
+            // Logic to add current players to the scene
+            for (const id in players) {
+                const player = document.createElement('a-entity');
+                player.setAttribute('geometry', { primitive: 'sphere', radius: 0.5 });
+                player.setAttribute('material', { color: 'blue' });
+                player.setAttribute('position', `${players[id].x} ${players[id].y} ${players[id].z}`);
+                player.setAttribute('id', id);
+                document.querySelector('a-scene').appendChild(player);
+            }
         });
 
-        socket.on('newPlayer', (playerData) => {
-            console.log('New player joined:', playerData);
-            // Add the new player to your game
+        socket.on('newPlayer', (data) => {
+            const player = document.createElement('a-entity');
+            player.setAttribute('geometry', { primitive: 'sphere', radius: 0.5 });
+            player.setAttribute('material', { color: 'blue' });
+            player.setAttribute('position', `${data.position.x} ${data.position.y} ${data.position.z}`);
+            player.setAttribute('id', data.id);
+            document.querySelector('a-scene').appendChild(player);
         });
 
         socket.on('move', (data) => {
-            console.log('Player moved:', data);
-            // Update the moved player's position in your game
+            const player = document.getElementById(data.id);
+            if (player) {
+                player.setAttribute('position', `${data.position.x} ${data.position.y} ${data.position.z}`);
+            }
         });
 
-        socket.on('removePlayer', (playerId) => {
-            console.log('Player disconnected:', playerId);
-            // Remove the player from your game
+        socket.on('removePlayer', (id) => {
+            const player = document.getElementById(id);
+            if (player) {
+                player.parentNode.removeChild(player);
+            }
         });
 
-        // Example function to move a player
-        function movePlayer(newPosition) {
-            socket.emit('move', newPosition); // Emit the player's new position
-        }
+        // Simulating movement (for testing, you can implement your own logic)
+        document.addEventListener('keydown', (event) => {
+            const position = { x: 0, y: 1.6, z: 0 }; // Get current position of the player
+            if (event.key === 'ArrowUp') position.z -= 0.1;
+            if (event.key === 'ArrowDown') position.z += 0.1;
+            if (event.key === 'ArrowLeft') position.x -= 0.1;
+            if (event.key === 'ArrowRight') position.x += 0.1;
+
+            // Emit movement to the server
+            socket.emit('move', position);
+        });
     </script>
-</head>
-<body>
-    <h1>Welcome to Your VR Multiplayer App</h1>
-    <!-- Your VR scene or elements go here -->
 </body>
 </html>
