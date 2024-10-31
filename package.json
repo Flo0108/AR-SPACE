@@ -1,19 +1,16 @@
 {
-  "name": "your-project-name",
+  "name": "vr-multiplayer",
   "version": "1.0.0",
-  "description": "A simple Node.js application.",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js",
-    "test": "jest"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
   "dependencies": {
-    "express": "^4.17.1",
-    "socket.io": "^4.0.1"
-  },
-  "engines": {
-    "node": "16.x"
-  },
-  "author": "Your Name",
-  "license": "MIT"
+    "express": "^4.21.1",
+    "socket.io": "^4.8.1"
+  }
 }

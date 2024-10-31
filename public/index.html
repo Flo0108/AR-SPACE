@@ -1,0 +1,69 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multiplayer VR Sample</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <a-scene>
+        <!-- Player template -->
+        <a-entity id="player" position="0 1.6 0">
+            <a-camera></a-camera>
+        </a-entity>
+        <!-- Ground -->
+        <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
+    </a-scene>
+
+    <script>
+        const socket = io();
+
+        let players = {};
+        const player = document.getElementById('player');
+
+        // Receive current players when joining
+        socket.on('currentPlayers', (currentPlayers) => {
+            players = currentPlayers;
+            Object.keys(players).forEach(id => {
+                if (id !== socket.id) addPlayer(id, players[id]);
+            });
+        });
+
+        // Add new player
+        socket.on('newPlayer', (data) => addPlayer(data.id, data.position));
+
+        // Remove player
+        socket.on('removePlayer', (id) => {
+            const player = document.getElementById(id);
+            if (player) player.remove();
+        });
+
+        // Move existing player
+        socket.on('move', (data) => {
+            const otherPlayer = document.getElementById(data.id);
+            if (otherPlayer) otherPlayer.setAttribute('position', data.position);
+        });
+
+        // Helper to add a player
+        function addPlayer(id, position) {
+            const el = document.createElement('a-sphere');
+            el.setAttribute('id', id);
+            el.setAttribute('position', position);
+            el.setAttribute('radius', 0.3);
+            el.setAttribute('color', '#FF0000');
+            document.querySelector('a-scene').appendChild(el);
+        }
+
+        // Send movement data
+        function sendMove() {
+            const pos = player.getAttribute('position');
+            socket.emit('move', pos);
+        }
+
+        // Update position periodically
+        setInterval(sendMove, 50);
+    </script>
+</body>
+</html>
