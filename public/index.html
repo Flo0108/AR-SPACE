@@ -19,15 +19,29 @@
     </style>
 </head>
 <body>
-    <a-scene>
+    <a-scene fog="type: linear; color: #AAB7B8; near: 10; far: 50">
+
+        <a-assets>
+            <img id="groundTexture" src="path/to/ground-texture.jpg">
+            <img id="skyTexture" src="path/to/skybox.jpg">
+        </a-assets>
+
+        <!-- Sky and Lighting -->
+        <a-sky src="#skyTexture"></a-sky>
+        <a-light type="ambient" color="#888"></a-light>
+        <a-light type="directional" position="10 10 0" intensity="0.8"></a-light>
+
+        </a-entity>
+        <!-- Ground Plane -->
+        <a-plane rotation="-90 0 0" width="30" height="30" src="#groundTexture" repeat="10 10"></a-plane>
+
+        <!-- Load the model -->
+        <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
+
         <!-- Player template -->
         <a-entity id="player" position="0 1.6 0">
             <a-camera></a-camera>
-        </a-entity>
-        <!-- Ground -->
-        <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
-        <!-- Load the model -->
-        <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
+
     </a-scene>
 
     <div id="joystick"></div>
