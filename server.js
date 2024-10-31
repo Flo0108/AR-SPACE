@@ -3,15 +3,17 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
 const PORT = process.env.PORT || 3000;
+const INITIAL_POSITION = { x: 0, y: 1.6, z: 0 }; // Initial position in VR space
 
 // Serve static files from the "public" directory
-app.use(express.static(__dirname + '/public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Object to keep track of players
 let players = {};
@@ -20,7 +22,7 @@ io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
 
     // Add new player to the list with an initial position
-    players[socket.id] = { x: 0, y: 1.6, z: 0 };  // initial position in VR space
+    players[socket.id] = INITIAL_POSITION;
 
     // Send current players to the new player
     socket.emit('currentPlayers', players);
