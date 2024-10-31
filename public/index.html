@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <title>Multiplayer VR Sample</title>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <!-- Ensure the socket.io script loads from the correct path -->
     <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
@@ -19,7 +18,6 @@
     </a-scene>
 
     <script>
-        // Connect to socket.io using the current window location
         const socket = io(window.location.origin);
 
         let players = {};
@@ -30,7 +28,7 @@
         socket.on('currentPlayers', (currentPlayers) => {
             players = currentPlayers;
             Object.keys(players).forEach(id => {
-                if (id !== socket.id) addPlayer(id, players[id]);
+                if (id !== socket.id) addPlayer(id, players[id].position);
             });
         });
 
@@ -69,7 +67,7 @@
             document.querySelector('a-scene').appendChild(el);
         }
 
-        // Function to update the player's position based on camera
+        // Update player position based on camera position
         function updatePlayerPosition() {
             const pos = camera.getAttribute('position'); // Get the camera position
             player.setAttribute('position', pos); // Update player entity's position
