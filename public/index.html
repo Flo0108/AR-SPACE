@@ -3,91 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VR Multiplayer Game</title>
+    <title>VR Multiplayer App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            position: relative;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .player {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: blue;
-            transform: translate(-50%, -50%);
-        }
+        body { margin: 0; }
+        a-scene { width: 100vw; height: 100vh; }
     </style>
 </head>
 <body>
-    <script src="/socket.io/socket.io.js"></script>
+    <a-scene>
+        <a-entity id="player" position="0 1.6 0" geometry="primitive: sphere; radius: 0.2" material="color: blue"></a-entity>
+    </a-scene>
+
     <script>
         const socket = io(); // Connect to the server
-        const players = {};
 
-        // Function to add a new player
-        function addPlayer(id, position) {
-            const playerElement = document.createElement('div');
-            playerElement.className = 'player';
-            playerElement.id = id;
-            document.body.appendChild(playerElement);
-            updatePlayerPosition(id, position);
-        }
+        const playerEl = document.getElementById('player');
 
-        // Function to update player position
-        function updatePlayerPosition(id, position) {
-            const playerElement = document.getElementById(id);
-            if (playerElement) {
-                playerElement.style.transform = `translate3d(${position.x * 50}px, ${position.y * 50}px, ${position.z * 50}px)`; // Adjust scaling as needed
-            }
-        }
-
-        // Handle new players
-        socket.on('newPlayer', (data) => {
-            addPlayer(data.id, data.position);
-        });
-
-        // Update current players on connection
         socket.on('currentPlayers', (currentPlayers) => {
-            for (let id in currentPlayers) {
+            for (const id in currentPlayers) {
                 addPlayer(id, currentPlayers[id]);
             }
         });
 
-        // Update player position on movement
-        socket.on('move', (data) => {
-            updatePlayerPosition(data.id, data.position);
+        socket.on('newPlayer', (data) => {
+            addPlayer(data.id, data.position);
         });
 
-        // Handle player removal
         socket.on('removePlayer', (id) => {
-            const playerElement = document.getElementById(id);
-            if (playerElement) {
-                document.body.removeChild(playerElement);
+            removePlayer(id);
+        });
+
+        socket.on('move', (data) => {
+            const player = document.getElementById(data.id);
+            if (player) {
+                player.setAttribute('position', data.position);
             }
         });
 
-        // Example movement logic
-        document.addEventListener('keydown', (event) => {
-            const currentPlayer = players[socket.id] || { x: 0, y: 1.6, z: 0 };
-            let newPosition = { ...currentPlayer };
+        function addPlayer(id, position) {
+            const newPlayer = document.createElement('a-entity');
+            newPlayer.setAttribute('id', id);
+            newPlayer.setAttribute('geometry', 'primitive: sphere; radius: 0.2');
+            newPlayer.setAttribute('material', 'color: red');
+            newPlayer.setAttribute('position', position);
+            document.querySelector('a-scene').appendChild(newPlayer);
+        }
 
-            // Update newPosition based on key pressed (W, A, S, D or arrow keys)
-            if (event.key === 'ArrowUp') {
-                newPosition.z += 0.1; // Move forward
-            } else if (event.key === 'ArrowDown') {
-                newPosition.z -= 0.1; // Move backward
-            } else if (event.key === 'ArrowLeft') {
-                newPosition.x -= 0.1; // Move left
-            } else if (event.key === 'ArrowRight') {
-                newPosition.x += 0.1; // Move right
+        function removePlayer(id) {
+            const player = document.getElementById(id);
+            if (player) {
+                document.querySelector('a-scene').removeChild(player);
             }
+        }
 
-            // Emit the new position to the server
-            socket.emit('move', { id: socket.id, position: newPosition });
+        document.addEventListener('keydown', (event) => {
+            const moveDistance = 0.1;
+            const position = playerEl.getAttribute('position');
+
+            switch (event.key) {
+                case 'ArrowUp':
+                    position.z -= moveDistance;
+                    break;
+                case 'ArrowDown':
+                    position.z += moveDistance;
+                    break;
+                case 'ArrowLeft':
+                    position.x -= moveDistance;
+                    break;
+                case 'ArrowRight':
+                    position.x += moveDistance;
+                    break;
+            }
+            playerEl.setAttribute('position', position);
+            // Send updated position to server
+            socket.emit('move', { id: playerEl.id, position: position });
         });
     </script>
 </body>

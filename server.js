@@ -20,7 +20,7 @@ io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
 
     // Add new player to the list with an initial position
-    players[socket.id] = { x: 0, y: 1.6, z: 0 };  // initial position in VR space
+    players[socket.id] = { x: 0, y: 1.6, z: 0 };  // Initial position in VR space
 
     // Send current players to the new player
     socket.emit('currentPlayers', players);
