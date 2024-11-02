@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebRTC Streaming with A-Frame</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script> <!-- A-Frame library -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/nipplejs/dist/nipplejs.css" />
+    <script src="https://unpkg.com/nipplejs/dist/nipplejs.js"></script>
     <style>
         body {
             margin: 0;
@@ -27,14 +30,73 @@
             align-items: center;
             margin-bottom: 20px; /* Space between videos and A-Frame scene */
         }
+
+        #joystick {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+        }
+        #scoreboard {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
         a-scene {
             width: 100%; /* Full width for A-Frame scene */
-            height: 70vh; /* Adjust height for A-Frame scene */
+            height: 100vh; /* Adjust height for A-Frame scene */
         }
     </style>
 </head>
+<script>
+    // Prompt user for username
+    let username = null;
+    while (!username) {
+        username = prompt("Please enter your username:");
+    }
+
+    // Notify the server of the username
+    socket.emit('username', username);
+
+    // Only allow broadcasting if the username is "Camera"
+    const isCameraUser = username === "Camera";
+
+    if (isCameraUser) {
+        console.log("User has broadcasting privileges.");
+
+        // Initialize media for broadcasting
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then(stream => {
+                document.getElementById('localVideo').srcObject = stream;
+                // Broadcast stream to other players
+                socket.emit('broadcastStream', stream);
+            })
+            .catch(error => {
+                console.error("Error accessing media devices:", error);
+            });
+    } else {
+        console.log("User does not have broadcasting privileges.");
+        // Only setup receiving video and audio
+        socket.on('receiveStream', stream => {
+            document.getElementById('remoteVideo').srcObject = stream;
+        });
+    }
+
+    // Handle receiving a broadcast stream from the "Camera" user
+    socket.on('broadcastStream', (stream) => {
+        if (!isCameraUser) { // Prevent the Camera user from seeing their own broadcast
+            document.getElementById('remoteVideo').srcObject = stream;
+        }
+    });
+
+</script>
 <body>
-    <h1>WebRTC Streaming</h1>
+    <div id="joystick"></div>
     <div id="video-container">
         <video id="localVideo" autoplay playsinline></video>
         <video id="remoteVideo" autoplay playsinline></video>
@@ -46,6 +108,113 @@
 
         <a-sky color="#ECECEC"></a-sky>
     </a-scene>
+    
+    <script>
+
+        const socket = io(window.location.origin);
+        let players = {};
+        let firstPlayerId = null;
+        const player = document.getElementById('player');
+        const camera = player.querySelector('a-camera');
+        
+        // Initialize closest planes for each player
+        let closestPlanes = {};
+        let localScores = {};
+
+        
+        // Joystick setup
+        const joystick = nipplejs.create({
+            zone: document.getElementById('joystick'),
+            mode: 'static',
+            position: { left: '50%', bottom: '50%' },
+            size: 100,
+            color: 'white'
+        });
+
+        // Function to get the camera's forward and right direction vectors
+        function getCameraDirection() {
+            const cameraRotation = camera.getAttribute('rotation');
+            const yaw = THREE.MathUtils.degToRad(cameraRotation.y); // Convert yaw to radians
+        
+            const forwardVector = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)).normalize();
+            const rightVector = new THREE.Vector3(forwardVector.z, 0, -forwardVector.x).normalize();
+        
+            return { forward: forwardVector, right: rightVector };
+        }
+
+        // Function to send the player's new position to the server
+        function sendMove(position) {
+            socket.emit('move', { id: socket.id, position: position });
+        }
+
+        // Joystick movement handler
+        joystick.on('move', (evt, data) => {
+            const cameraRotation = camera.getAttribute('rotation');
+            const yaw = THREE.MathUtils.degToRad(cameraRotation.y);
+            const forwardVector = new THREE.Vector2(Math.sin(yaw), -Math.cos(yaw));
+            const joystickVector = new THREE.Vector2(data.vector.x, data.vector.y);
+            const movementVector = forwardVector.clone().multiplyScalar(joystickVector.y);
+            const rightVector = new THREE.Vector2(forwardVector.y, -forwardVector.x);
+            movementVector.add(rightVector.multiplyScalar(joystickVector.x));
+            const playerPos = player.getAttribute('position');
+            const newPosition = {
+                x: playerPos.x - movementVector.x * 0.1,
+                y: playerPos.y,
+                z: playerPos.z + movementVector.y * 0.1
+            };
+            player.setAttribute('position', newPosition);
+            sendMove(newPosition); // Send the movement to the server
+
+        });
+
+
+        // Initialize and update player positions in scene
+        socket.on('currentPlayers', (currentPlayers) => {
+            players = currentPlayers;
+            Object.keys(players).forEach(id => {
+                if (id !== socket.id) addPlayer(id, players[id].position);
+            });
+        });
+        
+        // Player management
+        socket.on('newPlayer', (data) => {
+            addPlayer(data.id, data.position);
+        });
+        socket.on('removePlayer', (id) => {
+            const playerEntity = document.getElementById(id);
+            if (playerEntity) playerEntity.remove();
+        });
+        socket.on('move', (data) => {
+            const otherPlayer = document.getElementById(data.id);
+            if (otherPlayer) {
+                otherPlayer.setAttribute('position', data.position);
+            }
+        });
+
+        // Handle score updating and closest plane tracking
+        setInterval(() => {
+            const playerPosition = player.getAttribute('position');
+            let closestPlane = null;
+            let closestDistance = Infinity;
+
+            document.querySelectorAll('.video-plane').forEach(plane => {
+                const planePosition = plane.getAttribute('position');
+                const distance = Math.sqrt(
+                    Math.pow(playerPosition.x - planePosition.x, 2) +
+                    Math.pow(playerPosition.y - planePosition.y, 2) +
+                    Math.pow(playerPosition.z - planePosition.z, 2)
+                );
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestPlane = plane.id;
+                }
+            });
+
+            document.getElementById('closestPlane').textContent = closestPlane || 'None';
+        }, 1000);
+
+    </script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
 </body>
