@@ -17,13 +17,11 @@
         }
 
         video {
-            /* display: none; */ /* Uncomment to show video */
             width: 640px; /* Set appropriate width */
             height: auto; /* Set height to auto */
             position: absolute; /* Keep it hidden but still rendering */
             top: -9999px; /* Move it off-screen */
         }
-
     </style>
 </head>
 <body>
@@ -37,17 +35,18 @@
         <!-- Sky and Lighting -->
         <a-sky src="#skyTexture"></a-sky>
         <a-light type="ambient" color="#888"></a-light>
-        <a-light type="directional" position="10 10 0" intensity="0.8"></a-light>
+        <a-light type="directional" position="10 10 0" intensity="2"></a-light>
 
         <!-- Ground Plane -->
         <a-plane rotation="-90 0 0" width="30" height="30" src="#groundTexture" repeat="10 10"></a-plane>
 
         <!-- Load the model -->
-        <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
+        <a-entity gltf-model="models/Test.glb" position="0 0.5 0" scale="1 1 1"></a-entity>
+        <a-entity gltf-model="models/Floor.glb" position="0 1 0" scale="1 1 1"></a-entity>
 
         <!-- Video planes for streaming -->
-        <a-plane id="videoPlane" rotation="0 0 0"   width="5" height="3"   position="0 4 -10" visible="false"></a-plane>
-        <a-plane id="videoPlane1" rotation="0 120"  width="5" height="3" position="-10 4 10" visible="false"></a-plane>
+        <a-plane id="videoPlane" rotation="0 0 0" width="5" height="3" position="0 4 -10" visible="false"></a-plane>
+        <a-plane id="videoPlane1" rotation="0 120" width="5" height="3" position="-10 4 10" visible="false"></a-plane>
         <a-plane id="videoPlane2" rotation="0 -120 0" width="5" height="3" position="10 4 10" visible="false"></a-plane>
 
         <!-- Player template -->
@@ -62,9 +61,9 @@
     <!-- Hidden video element to capture webcam stream -->
     <video id="videoElement" autoplay playsinline style="display:none;"></video>
 
+
     <script>
         const socket = io(window.location.origin);
-
         let players = {};
         let firstPlayerId = null; // To keep track of the first player who connects
         const player = document.getElementById('player');
@@ -77,88 +76,52 @@
                 const videoElement = document.getElementById('videoElement');
                 videoElement.srcObject = stream;
                 await videoElement.play();
+                applyVideoTexture(); // Call function to apply video texture once stream starts
             } catch (err) {
                 console.error("Error accessing webcam: ", err);
             }
         }
 
-        // Apply video texture to the plane and make it visible
-        function displayVideoOnPlane() {
-
+        // Apply video texture to the planes
+        function applyVideoTexture() {
             const videoElement = document.getElementById('videoElement');
 
-            const videoPlane = document.getElementById('videoPlane');
-            videoElement.addEventListener('play', () => {
-                videoPlane.setAttribute('material', 'src', '#videoElement');
-                videoPlane.setAttribute('visible', true);
+            // Set video texture for each plane
+            document.querySelectorAll('a-plane').forEach(videoPlane => {
+                videoPlane.setAttribute('material', `src: #videoElement; repeat: 1 1;`);
+                videoPlane.setAttribute('visible', true); // Make the plane visible
             });
-
-            const videoPlane1 = document.getElementById('videoPlane1');
-            videoElement.addEventListener('play', () => {
-                videoPlane1.setAttribute('material', 'src', '#videoElement');
-                videoPlane1.setAttribute('visible', true);
-            });
-            
-            
-            const videoPlane2 = document.getElementById('videoPlane2');
-            videoElement.addEventListener('play', () => {
-                videoPlane2.setAttribute('material', 'src', '#videoElement');
-                videoPlane2.setAttribute('visible', true);
-            });
-
         }
+
+        // Sync the streaming player based on connection order
+        socket.on('connect', () => {
+            if (!firstPlayerId) {
+                firstPlayerId = socket.id; // Set the first player to stream
+                socket.emit('setStreamingPlayer', firstPlayerId);
+            }
+        });
 
         // Set up event listeners for syncing the streaming player
         socket.on('setStreamingPlayer', (streamingPlayerId) => {
             if (socket.id === streamingPlayerId) {
                 startStreaming();  // Only start streaming if this player is designated to stream
-                displayVideoOnPlane();
-            } else {
-                const videoPlane = document.getElementById('videoPlane');
-                videoPlane.setAttribute('material', 'src', '#videoElement');
-                videoPlane.setAttribute('visible', true); // Make it visible for others
-
-                const videoPlane1 = document.getElementById('videoPlane1');
-                videoPlane1.setAttribute('material', 'src', '#videoElement');
-                videoPlane1.setAttribute('visible', true); // Make it visible for others
-
-                const videoPlane2 = document.getElementById('videoPlane2');
-                videoPlane2.setAttribute('material', 'src', '#videoElement');
-                videoPlane2.setAttribute('visible', true); // Make it visible for others
-
             }
         });
 
         // If the streaming player disconnects, hide the video plane for everyone
         socket.on('streamingPlayerLeft', () => {
-            const videoPlane = document.getElementById('videoPlane');
-            videoPlane.setAttribute('visible', false);
-
-            const videoPlane1 = document.getElementById('videoPlane1');
-            videoPlane1.setAttribute('visible', false);
-
-            const videoPlane2 = document.getElementById('videoPlane2');
-            videoPlane2.setAttribute('visible', false);
+            document.querySelectorAll('a-plane').forEach(videoPlane => {
+                videoPlane.setAttribute('visible', false);
+            });
         });
 
         // Update the current streaming player when notified by the server
         socket.on('updateStreamingPlayer', (streamingPlayerId) => {
-            const videoPlane = document.getElementById('videoPlane');
             if (socket.id !== streamingPlayerId) {
-                videoPlane.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
-                videoPlane.setAttribute('visible', true); // Make the plane visible for all other players
-            }
-
-            const videoPlane1 = document.getElementById('videoPlane1');
-            if (socket.id !== streamingPlayerId) {
-                videoPlane1.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
-                videoPlane1.setAttribute('visible', true); // Make the plane visible for all other players
-            }
-
-            const videoPlane2 = document.getElementById('videoPlane2');
-            if (socket.id !== streamingPlayerId) {
-                videoPlane2.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
-                videoPlane2.setAttribute('visible', true); // Make the plane visible for all other players
+                document.querySelectorAll('a-plane').forEach(videoPlane => {
+                    videoPlane.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
+                    videoPlane.setAttribute('visible', true); // Make the plane visible for all other players
+                });
             }
         });
 
@@ -168,7 +131,7 @@
             mode: 'static',
             position: { left: '50%', bottom: '50%' },
             size: 100,
-            color: 'blue'
+            color: 'white'
         });
 
         // Function to get the camera's forward and right direction vectors
@@ -249,23 +212,22 @@
             el.setAttribute('radius', 0.3);
             el.setAttribute('color', '#FF0000');
 
-            const nameEl = document.createElement('a-text');
-            nameEl.setAttribute('value', id);
-            nameEl.setAttribute('position', '0 0.5 0');
-            el.appendChild(nameEl);
-
+            // Append player entity to the scene
             document.querySelector('a-scene').appendChild(el);
         }
 
-        // Sending player movement to server
         function sendMove(position) {
             socket.emit('move', { id: socket.id, position: position });
         }
 
-        // Start the streaming process when the page loads
-        window.onload = function () {
-            startStreaming();
-        };
+        // Start the socket connection
+        socket.on('disconnect', () => {
+            if (firstPlayerId === socket.id) {
+                socket.emit('streamingPlayerLeft'); // Notify others that the first player left
+                firstPlayerId = null; // Reset the first player id
+            }
+        });
+
     </script>
 </body>
 </html>
