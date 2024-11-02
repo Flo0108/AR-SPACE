@@ -3,12 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebRTC Streaming</title>
+    <title>WebRTC Streaming with A-Frame</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script> <!-- A-Frame library -->
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh; /* Full height */
+        }
+        video {
+            width: 15%; /* Smaller width for videos */
+            height: auto;
+            margin: 5px;
+            border: 1px solid black;
+            border-radius: 5px; /* Optional: Rounded corners */
+        }
+        #video-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px; /* Space between videos and A-Frame scene */
+        }
+        a-scene {
+            width: 100%; /* Full width for A-Frame scene */
+            height: 70vh; /* Adjust height for A-Frame scene */
+        }
+    </style>
 </head>
 <body>
     <h1>WebRTC Streaming</h1>
-    <video id="localVideo" autoplay playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
+    <div id="video-container">
+        <video id="localVideo" autoplay playsinline></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+    <a-scene embedded>
+
+        <!-- Load the model -->
+        <a-entity gltf-model="models/Test.glb" position="0 0.5 0" scale="1 1 1"></a-entity> 
+
+        <a-sky color="#ECECEC"></a-sky>
+    </a-scene>
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
 </body>
