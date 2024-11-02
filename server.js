@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
@@ -7,24 +6,30 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Serve static files from the 'public' directory
-app.use(express.static(__dirname + '/public'));
-
-let players = {};
+const players = {}; // Store players' data
+let streamingPlayerId = null;
 
 io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
 
-    // Add new player to the list
-    players[socket.id] = { position: { x: 0, y: 1.6, z: 0 } };  // initial position
+    // Add new player to the list with initial position
+    players[socket.id] = { position: { x: 0, y: 1.6, z: 0 } };
 
-    // Send current players to the new player
+    // Assign the streaming role to the first player who connects
+    if (!streamingPlayerId) {
+        streamingPlayerId = socket.id;
+    }
+
+    // Notify all clients of the current streaming player
+    io.emit('setStreamingPlayer', streamingPlayerId);
+
+    // Send the list of current players to the newly connected player
     socket.emit('currentPlayers', players);
 
-    // Notify others of new player
+    // Notify others of the new player
     socket.broadcast.emit('newPlayer', { id: socket.id, position: players[socket.id].position });
 
-    // Handle movement updates
+    // Handle movement updates from the player
     socket.on('move', (data) => {
         if (players[socket.id]) {
             players[socket.id].position = data.position; // Update position on server
@@ -32,13 +37,32 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle disconnection
+    // Handle player disconnection
     socket.on('disconnect', () => {
         console.log('Player disconnected:', socket.id);
         delete players[socket.id];
         socket.broadcast.emit('removePlayer', socket.id);
+
+        // If the streaming player disconnected, reassign streaming to another player if possible
+        if (socket.id === streamingPlayerId) {
+            streamingPlayerId = null; // Clear the streaming player ID
+
+            // Reassign to another player if there are any left
+            const remainingPlayerIds = Object.keys(players);
+            if (remainingPlayerIds.length > 0) {
+                streamingPlayerId = remainingPlayerIds[0];
+                io.emit('setStreamingPlayer', streamingPlayerId); // Notify clients of the new streaming player
+            } else {
+                io.emit('streamingPlayerLeft'); // Inform clients that there's no streaming player
+            }
+
+            console.log('Streaming player left or reassigned');
+        }
     });
 });
+
+// Serve static files from the 'public' directory
+app.use(express.static(__dirname + '/public'));
 
 // Listen on the appropriate port (use the port from the environment variable)
 const PORT = process.env.PORT || 3000;

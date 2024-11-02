@@ -42,31 +42,125 @@
         <!-- Ground Plane -->
         <a-plane rotation="-90 0 0" width="30" height="30" src="#groundTexture" repeat="10 10"></a-plane>
 
-        <!-- Video Stream Plane -->
-        <a-plane id="videoPlane" rotation="0 0 0" width="5" height="3" position="0 2 -5" visible="true"></a-plane>
-
         <!-- Load the model -->
         <a-entity gltf-model="models/Test.glb" position="0 0 0" scale="0.5 0.5 0.5"></a-entity>
+
+        <!-- Video planes for streaming -->
+        <a-plane id="videoPlane" rotation="0 0 0"   width="5" height="3"   position="0 4 -10" visible="false"></a-plane>
+        <a-plane id="videoPlane1" rotation="0 120"  width="5" height="3" position="-10 4 10" visible="false"></a-plane>
+        <a-plane id="videoPlane2" rotation="0 -120 0" width="5" height="3" position="10 4 10" visible="false"></a-plane>
 
         <!-- Player template -->
         <a-entity id="player" position="0 1.6 0">
             <a-camera></a-camera>
-            <a-text id="directionText" value="Direction: (0, 0, 0)" position="-3 3 -5" color="#FFF" align="center"></a-text>
         </a-entity>
 
     </a-scene>
 
     <div id="joystick"></div>
-    <video id="videoElement" autoplay></video>
+
+    <!-- Hidden video element to capture webcam stream -->
+    <video id="videoElement" autoplay playsinline style="display:none;"></video>
 
     <script>
         const socket = io(window.location.origin);
+
         let players = {};
         let firstPlayerId = null; // To keep track of the first player who connects
         const player = document.getElementById('player');
         const camera = player.querySelector('a-camera');
-        const videoElement = document.getElementById('videoElement');
-        const videoPlane = document.getElementById('videoPlane');
+
+        // Capture the video stream from the webcam
+        async function startStreaming() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.getElementById('videoElement');
+                videoElement.srcObject = stream;
+                await videoElement.play();
+            } catch (err) {
+                console.error("Error accessing webcam: ", err);
+            }
+        }
+
+        // Apply video texture to the plane and make it visible
+        function displayVideoOnPlane() {
+
+            const videoElement = document.getElementById('videoElement');
+
+            const videoPlane = document.getElementById('videoPlane');
+            videoElement.addEventListener('play', () => {
+                videoPlane.setAttribute('material', 'src', '#videoElement');
+                videoPlane.setAttribute('visible', true);
+            });
+
+            const videoPlane1 = document.getElementById('videoPlane1');
+            videoElement.addEventListener('play', () => {
+                videoPlane1.setAttribute('material', 'src', '#videoElement');
+                videoPlane1.setAttribute('visible', true);
+            });
+            
+            
+            const videoPlane2 = document.getElementById('videoPlane2');
+            videoElement.addEventListener('play', () => {
+                videoPlane2.setAttribute('material', 'src', '#videoElement');
+                videoPlane2.setAttribute('visible', true);
+            });
+
+        }
+
+        // Set up event listeners for syncing the streaming player
+        socket.on('setStreamingPlayer', (streamingPlayerId) => {
+            if (socket.id === streamingPlayerId) {
+                startStreaming();  // Only start streaming if this player is designated to stream
+                displayVideoOnPlane();
+            } else {
+                const videoPlane = document.getElementById('videoPlane');
+                videoPlane.setAttribute('material', 'src', '#videoElement');
+                videoPlane.setAttribute('visible', true); // Make it visible for others
+
+                const videoPlane1 = document.getElementById('videoPlane1');
+                videoPlane1.setAttribute('material', 'src', '#videoElement');
+                videoPlane1.setAttribute('visible', true); // Make it visible for others
+
+                const videoPlane2 = document.getElementById('videoPlane2');
+                videoPlane2.setAttribute('material', 'src', '#videoElement');
+                videoPlane2.setAttribute('visible', true); // Make it visible for others
+
+            }
+        });
+
+        // If the streaming player disconnects, hide the video plane for everyone
+        socket.on('streamingPlayerLeft', () => {
+            const videoPlane = document.getElementById('videoPlane');
+            videoPlane.setAttribute('visible', false);
+
+            const videoPlane1 = document.getElementById('videoPlane1');
+            videoPlane1.setAttribute('visible', false);
+
+            const videoPlane2 = document.getElementById('videoPlane2');
+            videoPlane2.setAttribute('visible', false);
+        });
+
+        // Update the current streaming player when notified by the server
+        socket.on('updateStreamingPlayer', (streamingPlayerId) => {
+            const videoPlane = document.getElementById('videoPlane');
+            if (socket.id !== streamingPlayerId) {
+                videoPlane.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
+                videoPlane.setAttribute('visible', true); // Make the plane visible for all other players
+            }
+
+            const videoPlane1 = document.getElementById('videoPlane1');
+            if (socket.id !== streamingPlayerId) {
+                videoPlane1.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
+                videoPlane1.setAttribute('visible', true); // Make the plane visible for all other players
+            }
+
+            const videoPlane2 = document.getElementById('videoPlane2');
+            if (socket.id !== streamingPlayerId) {
+                videoPlane2.setAttribute('material', 'src', '#videoElement'); // Ensure the video texture is applied
+                videoPlane2.setAttribute('visible', true); // Make the plane visible for all other players
+            }
+        });
 
         // Joystick setup
         const joystick = nipplejs.create({
@@ -125,29 +219,6 @@
             sendMove(newPosition);
         });
 
-        // Function to start streaming video
-        async function startStreaming() {
-            if (!firstPlayerId) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                    videoElement.srcObject = stream;
-
-                    // Play the video to ensure it is rendering
-                    videoElement.play();
-
-                    // Create a new video texture
-                    const videoTexture = new THREE.VideoTexture(videoElement);
-                    videoPlane.setAttribute('material', 'src', videoTexture);
-
-                    // Make sure the video plane is visible
-                    videoPlane.setAttribute('visible', true);
-                    videoPlane.setAttribute('material', 'side', 'double'); // Ensure it's visible from both sides
-                } catch (err) {
-                    console.error('Error accessing webcam: ', err);
-                }
-            }
-        }
-
         // Initialize and update player positions in scene
         socket.on('currentPlayers', (currentPlayers) => {
             players = currentPlayers;
@@ -159,19 +230,10 @@
         // Player management: add, remove, and update players in scene
         socket.on('newPlayer', (data) => {
             addPlayer(data.id, data.position);
-            if (!firstPlayerId) {
-                firstPlayerId = data.id; // Set the first player who connects
-                startStreaming(); // Start streaming for the first player that connects
-            }
         });
         socket.on('removePlayer', (id) => {
             const player = document.getElementById(id);
             if (player) player.remove();
-            if (id === firstPlayerId) {
-                // Reset the streaming flag if the first player disconnects
-                firstPlayerId = null;
-                videoPlane.setAttribute('visible', false); // Hide the video plane
-            }
         });
         socket.on('move', (data) => {
             const otherPlayer = document.getElementById(data.id);
@@ -190,22 +252,20 @@
             const nameEl = document.createElement('a-text');
             nameEl.setAttribute('value', id);
             nameEl.setAttribute('position', '0 0.5 0');
-            nameEl.setAttribute('color', '#FFFFFF');
-
             el.appendChild(nameEl);
+
             document.querySelector('a-scene').appendChild(el);
         }
 
+        // Sending player movement to server
         function sendMove(position) {
-            socket.emit('move', { position });
+            socket.emit('move', { id: socket.id, position: position });
         }
 
-        // Sync player position on screen to ensure continuous updates
-        setInterval(() => {
-            const pos = player.getAttribute('position');
-            player.setAttribute('position', pos);
-        }, 100);
+        // Start the streaming process when the page loads
+        window.onload = function () {
+            startStreaming();
+        };
     </script>
-
 </body>
 </html>
