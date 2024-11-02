@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Multiplayer VR Sample</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/nipplejs/dist/nipplejs.css" />
+    <script src="https://unpkg.com/nipplejs/dist/nipplejs.js"></script>
+    <style>
+        #joystick {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 100px;
+            height: 100px;
+        }
+        #scoreboard {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a-scene fog="type: linear; color: #AAB7B8; near: 10; far: 50">
+        <a-sky src="#skyTexture"></a-sky>
+        <a-light type="ambient" color="#888"></a-light>
+        <a-light type="directional" position="10 10 0" intensity="2"></a-light>
+
+        <!-- Load the model -->
+        <a-entity gltf-model="models/Test.glb" position="0 0.5 0" scale="1 1 1"></a-entity>
+
+        <!-- Video planes for streaming -->
+        <a-plane id="videoPlane" rotation="0 0 0" width="5" height="3" position="0 4 -10" visible="false" class="video-plane"></a-plane>
+        <a-plane id="videoPlane1" rotation="0 120 0" width="5" height="3" position="-10 4 10" visible="false" class="video-plane"></a-plane>
+        <a-plane id="videoPlane2" rotation="0 -120 0" width="5" height="3" position="10 4 10" visible="false" class="video-plane"></a-plane>
+
+        <a-entity id="player" position="0 1.6 0">
+            <a-camera></a-camera>
+        </a-entity>
+    </a-scene>
+
+    <div id="joystick"></div>
+    <div id="scoreboard">
+        <div>Closest Video Plane: <span id="closestPlane">None</span></div>
+    </div>
+
+    <script>
+        const socket = io(window.location.origin);
+        let players = {};
+        let firstPlayerId = null;
+        const player = document.getElementById('player');
+        const camera = player.querySelector('a-camera');
+        
+        // Initialize closest planes for each player
+        let closestPlanes = {};
+        let localScores = {};
+
+        // Capture the video stream from the webcam
+        async function startStreaming() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const videoElement = document.createElement('video');
+
+                videoElement.srcObject = stream;
+                videoElement.autoplay = true;
+                videoElement.muted = true; // Mute to avoid feedback
+
+                // Append videoElement to body for debugging purposes
+                document.body.appendChild(videoElement); // This will help you see if the video element is created
+
+                // Set video texture
+                applyVideoTexture(videoElement);
+
+                // Notify other players of the stream
+                socket.emit('stream', { id: socket.id, stream });
+                console.log("Video element source:", videoElement.srcObject);
+
+            } catch (error) {
+                console.error('Error accessing webcam: ', error);
+            }
+        }
+
+
+        // Apply video texture to the planes
+        function applyVideoTexture(videoElement) {
+            const videoTexture = new THREE.VideoTexture(videoElement);
+            videoTexture.needsUpdate = true; // Ensure that the texture is updated on every frame
+
+            document.querySelectorAll('.video-plane').forEach(plane => {
+                plane.setAttribute('material', `src: #${videoElement.id}`);
+                plane.setAttribute('visible', true);
+            });
+
+        }
+
+        // Sync the streaming player based on connection order
+        socket.on('connect', () => {
+            if (!firstPlayerId) {
+                firstPlayerId = socket.id; // Set the first player to stream
+                socket.emit('setStreamingPlayer', firstPlayerId);
+            }
+        });
+
+        // Set up event listeners for syncing the streaming player
+        socket.on('setStreamingPlayer', (streamingPlayerId) => {
+            if (socket.id === streamingPlayerId) {
+                startStreaming();  // Only start streaming if this player is designated to stream
+            }
+        });
+
+        // If the streaming player disconnects, hide the video planes for everyone
+        socket.on('streamingPlayerLeft', () => {
+            document.querySelectorAll('.video-plane').forEach(videoPlane => {
+                videoPlane.setAttribute('visible', false);
+            });
+        });
+
+        // Update the current streaming player when notified by the server
+        socket.on('updateStreamingPlayer', (streamingPlayerId) => {
+            if (socket.id !== streamingPlayerId) {
+                // Here, you should get the video stream from the server and apply the texture
+                // However, this will require server-side handling to send the stream to other clients
+                // For now, we'll keep it simple
+            }
+        });
+
+        // Apply stream for viewers
+        socket.on('stream', (data) => {
+            console.log(`Stream received for player: ${data.id}`); // Log when a stream is received
+            const videoElement = document.createElement('video');
+            videoElement.srcObject = data.stream;
+            videoElement.autoplay = true;
+            videoElement.muted = true; // Mute to avoid feedback
+
+            // Append videoElement to body for debugging purposes
+            document.body.appendChild(videoElement); // This will help you see if the video element is created
+
+            applyVideoTexture(videoElement);
+            videoElement.play()
+                .then(() => {
+                    console.log(`Playing stream for player: ${data.id}`); // Log successful play
+                })
+                .catch((error) => {
+                    console.error(`Error playing stream for player: ${data.id}`, error); // Log play errors
+                });
+        });
+
+
+
+        // Joystick setup
+        const joystick = nipplejs.create({
+            zone: document.getElementById('joystick'),
+            mode: 'static',
+            position: { left: '50%', bottom: '50%' },
+            size: 100,
+            color: 'white'
+        });
+
+        // Function to get the camera's forward and right direction vectors
+        function getCameraDirection() {
+            const cameraRotation = camera.getAttribute('rotation');
+            const yaw = THREE.MathUtils.degToRad(cameraRotation.y); // Convert yaw to radians
+        
+            const forwardVector = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)).normalize();
+            const rightVector = new THREE.Vector3(forwardVector.z, 0, -forwardVector.x).normalize();
+        
+            return { forward: forwardVector, right: rightVector };
+        }
+
+        // Function to send the player's new position to the server
+        function sendMove(position) {
+            socket.emit('move', { id: socket.id, position: position });
+        }
+
+        // Joystick movement handler
+        joystick.on('move', (evt, data) => {
+            const cameraRotation = camera.getAttribute('rotation');
+            const yaw = THREE.MathUtils.degToRad(cameraRotation.y);
+            const forwardVector = new THREE.Vector2(Math.sin(yaw), -Math.cos(yaw));
+            const joystickVector = new THREE.Vector2(data.vector.x, data.vector.y);
+            const movementVector = forwardVector.clone().multiplyScalar(joystickVector.y);
+            const rightVector = new THREE.Vector2(forwardVector.y, -forwardVector.x);
+            movementVector.add(rightVector.multiplyScalar(joystickVector.x));
+            const playerPos = player.getAttribute('position');
+            const newPosition = {
+                x: playerPos.x - movementVector.x * 0.1,
+                y: playerPos.y,
+                z: playerPos.z + movementVector.y * 0.1
+            };
+            player.setAttribute('position', newPosition);
+            sendMove(newPosition); // Send the movement to the server
+        });
+
+        // Initialize and update player positions in scene
+        socket.on('currentPlayers', (currentPlayers) => {
+            players = currentPlayers;
+            Object.keys(players).forEach(id => {
+                if (id !== socket.id) addPlayer(id, players[id].position);
+            });
+        });
+        
+        // Player management
+        socket.on('newPlayer', (data) => {
+            addPlayer(data.id, data.position);
+        });
+        socket.on('removePlayer', (id) => {
+            const playerEntity = document.getElementById(id);
+            if (playerEntity) playerEntity.remove();
+        });
+        socket.on('move', (data) => {
+            const otherPlayer = document.getElementById(data.id);
+            if (otherPlayer) {
+                otherPlayer.setAttribute('position', data.position);
+            }
+        });
+
+        // Handle score updating and closest plane tracking
+        setInterval(() => {
+            const playerPosition = player.getAttribute('position');
+            let closestPlane = null;
+            let closestDistance = Infinity;
+
+            document.querySelectorAll('.video-plane').forEach(plane => {
+                const planePosition = plane.getAttribute('position');
+                const distance = Math.sqrt(
+                    Math.pow(playerPosition.x - planePosition.x, 2) +
+                    Math.pow(playerPosition.y - planePosition.y, 2) +
+                    Math.pow(playerPosition.z - planePosition.z, 2)
+                );
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestPlane = plane.id;
+                }
+            });
+
+            document.getElementById('closestPlane').textContent = closestPlane || 'None';
+        }, 1000);
+    </script>
+</body>
+</html>
