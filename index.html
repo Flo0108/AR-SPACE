@@ -7,8 +7,10 @@
 </head>
 <body>
     <h1>WebRTC Streaming</h1>
-    <video id="localVideo" autoplay playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+    <div id="remoteName"></div> <!-- This is where the name will be displayed -->
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js"></script>
 </body>

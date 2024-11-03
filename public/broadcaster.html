@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Broadcaster</title>
+</head>
+<body>
+    <h1>Broadcaster</h1>
+    <video id="localVideo" autoplay muted></video>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io(); // Your socket.io setup here
+        let broadcasterPeerConnection;
+        let localStream;
+
+        async function startBroadcasting() {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            const localVideo = document.getElementById('localVideo');
+            localVideo.srcObject = localStream;
+
+            broadcasterPeerConnection = new RTCPeerConnection();
+
+            localStream.getTracks().forEach(track => {
+                broadcasterPeerConnection.addTrack(track, localStream);
+            });
+
+            broadcasterPeerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log('Broadcaster sent ICE candidate:', event.candidate);
+                    socket.emit('signal', { candidate: event.candidate });
+                }
+            };
+
+            const offer = await broadcasterPeerConnection.createOffer();
+            await broadcasterPeerConnection.setLocalDescription(offer);
+            console.log('Broadcaster sent offer:', broadcasterPeerConnection.localDescription);
+            socket.emit('signal', { offer: broadcasterPeerConnection.localDescription });
+        }
+
+        socket.on('newViewer', () => {
+            console.log('New viewer connected, sending current stream details.');
+        });
+
+        startBroadcasting();
+    </script>
+</body>
+</html>
