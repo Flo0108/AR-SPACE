@@ -41,7 +41,6 @@
             z-index: 30; /* Ensure it appears above other elements */
         }
 
-
         #scoreboard {
             position: fixed;
             top: 10px;
@@ -76,6 +75,8 @@
         src="https://player.twitch.tv/?channel=flo0oo0oo&parent=ar-space.onrender.com" 
         allowfullscreen="false">
     </iframe>
+    
+    <!-- ar-space.onrender.com instead of localhost! -->
 
     <!-- A-Frame Scene -->
     <a-scene embedded>
@@ -105,7 +106,6 @@
         <div>Closest Video Plane: <span id="closestPlane">None</span></div>
     </div>
     
-
     <script>
         const socket = io(window.location.origin);
         let players = {};
@@ -121,8 +121,8 @@
         const joystick = nipplejs.create({
             zone: document.getElementById('joystick'),
             mode: 'static',
-            position: { left: '50%', bottom: '50%' },
-            size: 100,
+            position: { left: '50%', bottom: '20px' }, // Adjust to position the joystick correctly
+            size: 150, // The size of the joystick
             color: 'red'
         });
 
@@ -141,22 +141,27 @@
         joystick.on('move', (evt, data) => {
             // Check if position data is defined
             if (data && data.position) {
-                // Center of the joystick area is assumed to be the origin (0, 0) of joystick position
-                const joystickCenter = { x: 0, y: 0 }; // Assuming (0, 0) as center for simplicity
+                // Calculate center of the joystick area based on its size
+                const joystickCenter = {
+                    x: joystick.options.size / 2, // Half of the joystick's size
+                    y: joystick.options.size / 2  // Half of the joystick's size
+                };
 
-                // Calculate vector manually as the difference between joystick position and center
+                // Calculate vector based on joystick position relative to the center
                 const vectorX = data.position.x - joystickCenter.x;
                 const vectorY = data.position.y - joystickCenter.y;
 
-                // Normalize vector to prevent extreme values
+                // Calculate the magnitude of the vector
                 const magnitude = Math.sqrt(vectorX * vectorX + vectorY * vectorY);
-                const normalizedVector = {
-                    x: vectorX / magnitude,
-                    y: vectorY / magnitude
-                };
 
-                // Log the normalized vector direction
-                console.log("Joystick vector direction:", normalizedVector);
+                // Normalize the vector
+                let normalizedVector = { x: 0, y: 0 };
+                if (magnitude > 0) {
+                    normalizedVector = {
+                        x: vectorX / magnitude,
+                        y: vectorY / magnitude
+                    };
+                }
 
                 // Define movement factor to control speed
                 const movementFactor = 0.1; // Adjust this value for desired movement speed
@@ -164,11 +169,14 @@
                 // Get player's current position
                 const playerPos = player.getAttribute('position');
 
-                // Calculate new position based on normalized vector
+                // Get the camera's forward and right direction vectors
+                const { forward, right } = getCameraDirection();
+
+                // Calculate new position based on the normalized vector and camera direction
                 const newPosition = {
-                    x: playerPos.x + normalizedVector.x * movementFactor,
+                    x: playerPos.x + forward.x * normalizedVector.y * movementFactor + right.x * normalizedVector.x * movementFactor,
                     y: playerPos.y,
-                    z: playerPos.z + normalizedVector.y * movementFactor
+                    z: playerPos.z + forward.z * normalizedVector.y * movementFactor + right.z * normalizedVector.x * movementFactor
                 };
 
                 // Update player position
@@ -178,7 +186,6 @@
                 console.warn("Joystick data or position is undefined:", data);
             }
         });
-
 
 
 
