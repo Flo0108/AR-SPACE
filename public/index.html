@@ -15,17 +15,20 @@
             margin: 0; /* Reset default margin */
             overflow: hidden; /* Hide overflow */
         }
+
         h1 {
             position: absolute; /* Position the heading over the A-Frame */
             top: 20px; /* Space from the top */
             z-index: 10; /* Ensure it stays above the A-Frame */
             color: #fff; /* Change heading color for visibility */
+            font-size: 24px; /* Base font size */
         }
+
         iframe {
             border: none; /* Removes default border */
             border-radius: 8px; /* Optional: Adds rounded corners */
-            width: 560px; /* Smaller width */
-            height: 315px; /* Smaller height */
+            width: 560px; /* Default width */
+            height: 315px; /* Default height */
             position: absolute; /* Absolute positioning */
             top: 80px; /* Space from the top */
             z-index: 20; /* Higher z-index to sit above the A-Frame */
@@ -36,8 +39,8 @@
             bottom: 20px; /* Distance from the bottom of the screen */
             left: 50%; /* Center horizontally */
             transform: translateX(-50%); /* Adjust to center precisely */
-            width: 150px;
-            height: 150px;
+            width: 150px; /* Default joystick size */
+            height: 150px; /* Default joystick size */
             z-index: 30; /* Ensure it appears above other elements */
         }
 
@@ -59,6 +62,46 @@
             height: 100%; /* Full height for A-Frame */
             z-index: 1; /* Lower z-index to place behind other elements */
         }
+
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 20px; /* Smaller font size for mobile */
+                top: 10px; /* Adjust position for mobile */
+            }
+
+            iframe {
+                width: 60%; /* width on mobile */
+                height: auto; /* Maintain aspect ratio */
+                top: 50px; /* Adjust space from the top */
+            }
+
+            #joystick {
+                width: 100px; /* Smaller joystick size for mobile */
+                height: 100px; /* Smaller joystick size for mobile */
+            }
+
+            #scoreboard {
+                padding: 8px; /* Adjust padding for mobile */
+                font-size: 14px; /* Smaller font size for scoreboard */
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 18px; /* Further reduce font size */
+            }
+
+            #joystick {
+                width: 80px; /* Even smaller joystick */
+                height: 80px; /* Even smaller joystick */
+            }
+
+            #scoreboard {
+                font-size: 12px; /* Smaller font size for scoreboard */
+            }
+        }
+
     </style>
     </style>
     <!-- Include A-Frame library -->
