@@ -6,28 +6,21 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Serve static files from the public directory
-app.use(express.static('public'));
+// Serve your HTML and JS files
+app.use(express.static('public')); // Adjust the directory as necessary
 
-// Serve index.html at the root
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-
-// WebSocket connection
 io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('signal', (data) => {
-        socket.broadcast.emit('signal', data);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
+    console.log('A user connected: ' + socket.id);
+    
+    // Handle events
+    socket.on('move', (data) => {
+        // Handle move event
+        socket.broadcast.emit('move', data);
     });
 });
 
-const PORT = process.env.PORT || 3000;
+// Start the server
+const PORT = 3000;
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
