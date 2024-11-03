@@ -2,7 +2,6 @@ const socket = io();
 
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
-const remoteName = document.getElementById('remoteName'); // Element to display the remote user's name
 let localStream;
 let peerConnection;
 const servers = {
@@ -11,17 +10,6 @@ const servers = {
         // Add more STUN/TURN servers if needed
     ],
 };
-
-let userCount = 0; // Initialize user count
-
-// Function to generate a random name
-function generateRandomName() {
-    const names = ["Alice", "Bob", "Charlie", "Dana", "Eve", "Frank"];
-    return names[Math.floor(Math.random() * names.length)];
-}
-
-// Generate a random name for the user
-const userName = generateRandomName();
 
 // Get user media
 navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -39,18 +27,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
         };
 
         peerConnection.ontrack = (event) => {
-            // Only set remote video source for the first user
-            userCount++; // Increment user count
-            if (userCount === 1) {
-                remoteVideo.srcObject = event.streams[0];
-                remoteName.innerText = "Remote User: " + userName; // Set the remote user's generated name
-            } else {
-                // Hide the remote video for subsequent users
-                remoteVideo.srcObject = null; // Clear remote video source
-                remoteName.innerText = ""; // Clear the name
-                // You can also hide the video element if needed
-                remoteVideo.style.display = 'none';
-            }
+            remoteVideo.srcObject = event.streams[0];
         };
 
         // Create offer
