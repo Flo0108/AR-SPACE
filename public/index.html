@@ -36,7 +36,7 @@
 
         #joystick {
             position: fixed;
-            bottom: 20px; /* Distance from the bottom of the screen */
+            bottom: 100px; /* Distance from the bottom of the screen */
             left: 50%; /* Center horizontally */
             transform: translateX(-50%); /* Adjust to center precisely */
             width: 150px; /* Default joystick size */
@@ -144,16 +144,34 @@
         <a-plane id="videoPlane1" rotation="0 120 0" width="5" height="3" position="-10 4 10" visible="false" class="video-plane"></a-plane>
         <a-plane id="videoPlane2" rotation="0 -120 0" width="5" height="3" position="10 4 10" visible="false" class="video-plane"></a-plane>
 
-        <a-entity particle-system="preset: snow; particleCount: 100"></a-entity>
-
         <!-- Sky -->
         <a-sky color="#E9CFC7"></a-sky>
 
         <!-- Player Entity -->
         <a-entity id="player" position="0 1 0">  <!-- Player sphere at height 1 -->
-            <a-sphere radius="0.5" color="#FF0000"></a-sphere> <!-- Optional player sphere -->
+            <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere> <!-- Optional player sphere -->
             <a-camera position="0 25 0"></a-camera>  <!-- Camera at height 15 (1 + 14) -->
         </a-entity>
+
+        <!-- Points in the scene (with visual spheres) -->
+        <a-entity id="point3" position="0 2 -10">
+            <a-sphere radius="1" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
+        </a-entity>
+        <a-entity id="point1" position="-10 2 10">
+            <a-sphere radius="1" color="#00FF00"></a-sphere> <!-- Green Sphere for Point 2 -->
+        </a-entity>
+        <a-entity id="point2" position="10 2 10">
+            <a-sphere radius="1" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
+        </a-entity>
+
+        <a-text id="distance-text" 
+                 value="Distance to Origin: 0" 
+                 position="0 3 -2" 
+                 align="center" 
+                 color="#FFF" 
+                 width="6" 
+                 scale="10 10 4">
+        </a-text>
 
     </a-scene>
 
@@ -208,11 +226,12 @@
             // Check if the current player is the local player
             if (id === socket.id) {
                 sphere.setAttribute('color', 'green'); // Local player color
+                sphere.setAttribute('radius', '1.0'); // Larger radius for local player
             } else {
                 sphere.setAttribute('color', 'red'); // Other players' color
+                sphere.setAttribute('radius', '0.5'); // Smaller radius for other players
             }
 
-            sphere.setAttribute('radius', '0.5');
             sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
             document.querySelector('a-scene').appendChild(sphere);
             players[id] = sphere; // Associate the sphere with the player ID
@@ -270,9 +289,89 @@
         });
 
 
+        document.addEventListener('DOMContentLoaded', function () {
+            const playerSphere = document.getElementById('player-sphere');
+            const distanceText = document.getElementById('distance-text');
+
+            const point1 = document.getElementById('point1');
+            const point2 = document.getElementById('point2');
+            const point3 = document.getElementById('point3');
+
+            if (!playerSphere || !distanceText || !point1 || !point2 || !point3) {
+                console.error('One or more required elements not found!');
+                return; // Exit if elements are not found
+            }
+
+            function updateDistances() {
+                // Get the player's position from the player entity
+                const playerX = player.object3D.position.x;
+                const playerY = player.object3D.position.y;
+                const playerZ = player.object3D.position.z;
+
+                // Get the positions of the points
+                const point1X = point1.object3D.position.x;
+                const point1Y = point1.object3D.position.y;
+                const point1Z = point1.object3D.position.z;
+
+                const point2X = point2.object3D.position.x;
+                const point2Y = point2.object3D.position.y;
+                const point2Z = point2.object3D.position.z;
+
+                const point3X = point3.object3D.position.x;
+                const point3Y = point3.object3D.position.y;
+                const point3Z = point3.object3D.position.z;
+
+                // Calculate distances from the player to each point
+                const distanceToPoint1 = Math.sqrt(Math.pow(playerX - point1X, 2) + Math.pow(playerY - point1Y, 2) + Math.pow(playerZ - point1Z, 2));
+                const distanceToPoint2 = Math.sqrt(Math.pow(playerX - point2X, 2) + Math.pow(playerY - point2Y, 2) + Math.pow(playerZ - point2Z, 2));
+                const distanceToPoint3 = Math.sqrt(Math.pow(playerX - point3X, 2) + Math.pow(playerY - point3Y, 2) + Math.pow(playerZ - point3Z, 2));
+                
+                // Determine the closest point
+                let closestPoint = 'None';
+                let closestDistance = Infinity;
+
+                if (distanceToPoint1 < closestDistance) {
+                    closestDistance = distanceToPoint1;
+                    closestPoint = 'Player 1';
+                }
+                if (distanceToPoint2 < closestDistance) {
+                    closestDistance = distanceToPoint2;
+                    closestPoint = 'Player 2';
+                }
+                if (distanceToPoint3 < closestDistance) {
+                    closestDistance = distanceToPoint3;
+                    closestPoint = 'Player 3';
+                }
+                
+
+                // Send closest player info to server
+                socket.emit('closestPlayer', {
+                    id: player.object3D.id, // Player ID (you may need to adjust this if you're not using socket.id)
+                    closestPoint: closestPoint,
+                    closestDistance: closestDistance
+                });
+
+                // Update the text element with the closest point and its distance
+                distanceText.setAttribute('value', `You are Supporting: ${closestPoint}\nDistance: ${closestDistance.toFixed(2)}`);
+
+
+                // Log the closest point and distance
+                console.log(`Closest: ${closestPoint}, Distance: ${closestDistance.toFixed(2)}`);
+            }
+
+            // Call updateDistances in an animation loop
+            function animate() {
+                updateDistances();
+                requestAnimationFrame(animate);
+            }
+            animate();
+        });
+
+
+
 
         
-
+        console.log('DOM fully loaded and parsed');
         console.log('Emitting position:', player.object3D.position);
         console.log('Received move for ID:', data.id, 'Position:', data.position);
 
