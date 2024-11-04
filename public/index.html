@@ -33,18 +33,6 @@
             font-size: 24px; /* Base font size */
         }
 
-        #closest-player {
-            position: fixed;
-            bottom: 220px; /* Space from the top */
-            left: 50%; /* Center horizontally */
-            transform: translateX(-50%); /* Adjust to center precisely */
-            color: white;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-            z-index: 10; /* Ensure it appears above the A-Frame */
-            font-size: 12px;
-        }
 
         iframe {
             border: none; /* Removes default border */
@@ -53,13 +41,14 @@
             height: 315px; /* Default height */
             position: absolute; /* Absolute positioning */
             top: 80px; /* Space from the top */
+            right: 10px;
             z-index: 20; /* Higher z-index to sit above the A-Frame */
         }
 
         #support-counts {
             position: absolute;
+            top: 80px;
             left: 10px;
-            bottom: 300px;
             background-color: rgba(0, 0, 0, 0.5);
             color: white;
             padding: 10px;
@@ -95,9 +84,6 @@
                 top: 10px; /* Adjust position for mobile */
             }
 
-            #closest-player {
-                font-size: 16px; /* Smaller font size for mobile */
-            }
 
             iframe {
                 width: 45%; /* width on mobile */
@@ -328,8 +314,6 @@
                 }
             });
 
-            // Update the closest point text
-            closestPlayerDiv.textContent = closestPoint ? `Supporting: ${closestPoint}` : 'Supporting: None';
         
             // Send the closest point to the server
             socket.emit('updateSupportPoint', {
