@@ -109,17 +109,33 @@
     <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
+
+
+
+
+
     <iframe 
         src="https://player.twitch.tv/?channel=flo0oo0oo&parent=ar-space.onrender.com" 
         allowfullscreen="false">
     </iframe>
+
+    <!-- Video element for capturing camera feed -->
+    <video id="video" autoplay playsinline style="display: none;"></video>    
     
+
+
+
+
+
     <!-- A-Frame Scene -->
     <a-scene embedded>
         <!-- Lights -->
         <a-light type="ambient" color="#FFF" intensity="3"></a-light>
         <a-light type="directional" color="#FFF" intensity="1" position="-1 2 1" castShadow="true"></a-light>
         
+        <!-- Sky with video texture -->
+        <a-sky src="#videoTexture"></a-sky>
+
         <!-- Load the model -->
         <a-entity 
             gltf-model="models/Test.glb" 
@@ -134,8 +150,6 @@
         <a-plane id="videoPlane1" rotation="0 120 0" width="5" height="3" position="-10 4 10" visible="false" class="video-plane"></a-plane>
         <a-plane id="videoPlane2" rotation="0 -120 0" width="5" height="3" position="10 4 10" visible="false" class="video-plane"></a-plane>
 
-        <!-- Sky -->
-        <a-sky color="#E9CFC7"></a-sky>
 
         <!-- Player Entity -->
         <a-entity id="player" position="0 1 0">  <!-- Player sphere at height 1 -->
@@ -156,10 +170,51 @@
 
     </a-scene>
 
+
+
+
+
+
+
+
+
+
+
+
+
     <div id="joystick"></div>
     <div id="closest-player">Closest Player: None</div> <!-- New text object for closest player -->
 
     <script>
+
+
+        // Set up video element for camera feed
+        const video = document.getElementById('video');
+        const videoTexture = new THREE.VideoTexture(video);
+
+        // Start camera feed
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(err => {
+                console.error("Error accessing camera: ", err);
+            });
+
+        // Add video texture to A-Frame sky
+        AFRAME.registerComponent('video-sky', {
+            init: function () {
+                this.el.setAttribute('src', videoTexture);
+            }
+        });
+
+        // A-Frame scene initialization
+        const scene = document.querySelector('a-scene');
+        scene.addEventListener('loaded', () => {
+            scene.setAttribute('video-sky', '');
+        });
+
         const socket = io(window.location.origin);
         let players = {};
         const player = document.getElementById('player'); // Get player entity
