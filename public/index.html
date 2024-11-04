@@ -134,7 +134,7 @@
         <a-light type="directional" color="#FFF" intensity="1" position="-1 2 1" castShadow="true"></a-light>
         
         <!-- Sky with video texture -->
-        <a-sky src="#videoTexture"></a-sky>
+        <a-sky id="video-sky"></a-sky>
 
         <!-- Load the model -->
         <a-entity 
@@ -192,27 +192,29 @@
         const video = document.getElementById('video');
         const videoTexture = new THREE.VideoTexture(video);
 
-        // Start camera feed
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 video.srcObject = stream;
                 video.play();
+                videoTexture.needsUpdate = true; // Important for video texture
             })
             .catch(err => {
                 console.error("Error accessing camera: ", err);
             });
 
-        // Add video texture to A-Frame sky
+        // Apply video texture to sky after the scene loads
         AFRAME.registerComponent('video-sky', {
             init: function () {
-                this.el.setAttribute('src', videoTexture);
+                const sky = this.el;
+                sky.setAttribute('src', videoTexture);
             }
         });
 
         // A-Frame scene initialization
         const scene = document.querySelector('a-scene');
         scene.addEventListener('loaded', () => {
-            scene.setAttribute('video-sky', '');
+            const sky = document.querySelector('#video-sky');
+            sky.setAttribute('video-sky', '');
         });
 
         const socket = io(window.location.origin);
@@ -353,10 +355,6 @@
             // Emit the new position to the server
             socket.emit('move', { id: socket.id, position: player.object3D.position });
         });
-
-
-
-
 
 
         
