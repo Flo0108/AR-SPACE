@@ -2,9 +2,7 @@ const socket = io();
 
 const localVideo = document.getElementById('localVideo');
 const remoteVideo = document.getElementById('remoteVideo');
-let localStream;
-let peerConnections = {}; // Store peer connections
-let isBroadcaster = false; // Flag to determine if user is the broadcaster
+
 const servers = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },

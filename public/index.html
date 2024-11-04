@@ -151,149 +151,112 @@
     </a-scene>
 
     <div id="joystick"></div>
-    <div id="scoreboard">
-        <div>Closest Video Plane: <span id="closestPlane">None</span></div>
     </div>
     
     <script>
         const socket = io(window.location.origin);
         let players = {};
-        let firstPlayerId = null;
-        const player = document.getElementById('player');
-        const camera = player.querySelector('a-camera');
-        
-        // Initialize closest planes for each player
-        let closestPlanes = {};
-        let localScores = {};
+        const player = document.getElementById('player'); // Get player entity
+        const camera = player.querySelector('a-camera');  // Camera within player
+    
+        // Handle the current players on initial connection
+        socket.on('currentPlayers', (serverPlayers) => {
+            for (const id in serverPlayers) {
+                if (!players[id]) {
+                    createPlayerSphere(id, serverPlayers[id].position);
+                }
+            }
+        });
+    
+        // Handle new player joining
+        socket.on('newPlayer', (data) => {
+            createPlayerSphere(data.id, data.position);
+        });
+    
+        // Handle player movement
+        socket.on('move', (data) => {
+            if (players[data.id]) {
+                players[data.id].setAttribute('position', `${data.position.x} ${data.position.y} ${data.position.z}`);
+            }
+        });
+    
+        // Handle player disconnect
+        socket.on('removePlayer', (id) => {
+            if (players[id]) {
+                players[id].parentNode.removeChild(players[id]);
+                delete players[id];
+            }
+        });
 
+        socket.on('playerDisconnected', (id) => {
+            console.log('Player disconnected:', id);
+            // Handle the player removal logic here
+        });
+
+    
+        // Create a red sphere for each player
+        function createPlayerSphere(id, position) {
+            const sphere = document.createElement('a-sphere');
+            sphere.setAttribute('color', 'red');
+            sphere.setAttribute('radius', '0.5');
+            sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+            document.querySelector('a-scene').appendChild(sphere);
+            players[id] = sphere; // Associate the sphere with the player ID
+        }
+
+    
         // Joystick setup
         const joystick = nipplejs.create({
             zone: document.getElementById('joystick'),
             mode: 'static',
-            position: { left: '50%', bottom: '20px' }, // Adjust to position the joystick correctly
-            size: 150, // The size of the joystick
+            position: { left: '50%', bottom: '20px' },
+            size: 150,
             color: 'red'
         });
+    
 
-        // Function to get the camera's forward and right direction vectors
-        function getCameraDirection() {
-            const cameraRotation = camera.getAttribute('rotation');
-            const yaw = THREE.MathUtils.degToRad(cameraRotation.y); // Convert yaw to radians
-        
-            const forwardVector = new THREE.Vector3(Math.sin(yaw), 0, -Math.cos(yaw)).normalize();
-            const rightVector = new THREE.Vector3(forwardVector.z, 0, -forwardVector.x).normalize();
-        
-            return { forward: forwardVector, right: rightVector };
-        }
-
-        // Joystick movement handler
+        // Joystick movement handling
         joystick.on('move', (evt, data) => {
-            // Check if position data is defined
-            if (data && data.position) {
-                // Calculate center of the joystick area based on its size
-                const joystickCenter = {
-                    x: joystick.options.size / 2, // Half of the joystick's size
-                    y: joystick.options.size / 2  // Half of the joystick's size
-                };
+            const moveDistance = 0.1; // Movement speed
+            const angle = data.angle.degree;
 
-                // Calculate vector based on joystick position relative to the center
-                const vectorX = data.position.x - joystickCenter.x;
-                const vectorY = data.position.y - joystickCenter.y;
+            const rad = angle * (Math.PI / 180); // Convert to radians
 
-                // Calculate the magnitude of the vector
-                const magnitude = Math.sqrt(vectorX * vectorX + vectorY * vectorY);
+            // Get the camera's world direction
+            const cameraDirection = new THREE.Vector3();
+            camera.object3D.getWorldDirection(cameraDirection);
+            
+            // Project the camera direction onto the X-Z plane (ignore Y)
+            cameraDirection.y = 0; // Set Y to zero for 2D movement
+            cameraDirection.normalize(); // Normalize to get a unit vector
 
-                // Normalize the vector
-                let normalizedVector = { x: 0, y: 0 };
-                if (magnitude > 0) {
-                    normalizedVector = {
-                        x: vectorX / magnitude,
-                        y: vectorY / magnitude
-                    };
-                }
+            // Calculate the movement direction based on joystick input
+            const moveDirection = new THREE.Vector3(
+                cameraDirection.z * Math.cos(rad) + cameraDirection.x * Math.sin(rad), // Swapped to make 'up' move left
+                0, // Keep Y at 0 for 2D movement
+                cameraDirection.z * Math.sin(rad) - cameraDirection.x * Math.cos(rad) // Swapped to make 'down' move right
+            );
 
-                // Define movement factor to control speed
-                const movementFactor = 0.1; // Adjust this value for desired movement speed
 
-                // Get player's current position
-                const playerPos = player.getAttribute('position');
+            // Update player position based on the calculated direction
+            player.object3D.position.x += moveDirection.x * moveDistance;
+            player.object3D.position.z += moveDirection.z * moveDistance;
 
-                // Get the camera's forward and right direction vectors
-                const { forward, right } = getCameraDirection();
-
-                // Calculate new position based on the normalized vector and camera direction
-                const newPosition = {
-                    x: playerPos.x + forward.x * normalizedVector.y * movementFactor + right.x * normalizedVector.x * movementFactor,
-                    y: playerPos.y,
-                    z: playerPos.z + forward.z * normalizedVector.y * movementFactor + right.z * normalizedVector.x * movementFactor
-                };
-
-                // Update player position
-                player.setAttribute('position', newPosition);
-                sendMove(newPosition); // Send movement data to server if needed
-            } else {
-                console.warn("Joystick data or position is undefined:", data);
+            // Update the player's sphere position to match the player entity
+            const playerSphere = players[socket.id]; // Get the sphere associated with this player
+            if (playerSphere) {
+                playerSphere.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y} ${player.object3D.position.z}`);
             }
+
+            // Emit the new position to the server
+            socket.emit('move', { id: socket.id, position: player.object3D.position });
         });
 
 
 
+        console.log('Emitting position:', player.object3D.position);
+        console.log('Received move for ID:', data.id, 'Position:', data.position);
 
-        // Function to send the player's new position to the server
-        function sendMove(position) {
-            socket.emit('move', { id: socket.id, position: position });
-        }
-
-        socket.on('move', (data) => {
-            const otherPlayer = document.getElementById(data.id);
-            if (otherPlayer) {
-                otherPlayer.setAttribute('position', data.position);
-            }
-        });
-
-
-        // Initialize and update player positions in scene
-        socket.on('currentPlayers', (currentPlayers) => {
-            players = currentPlayers;
-            Object.keys(players).forEach(id => {
-                if (id !== socket.id) addPlayer(id, players[id].position);
-            });
-        });
-
-
-        // Player management
-        socket.on('newPlayer', (data) => {
-            addPlayer(data.id, data.position);
-        });
-        socket.on('removePlayer', (id) => {
-            const playerEntity = document.getElementById(id);
-            if (playerEntity) playerEntity.remove();
-        });
-
-
-        // Handle score updating and closest plane tracking
-        setInterval(() => {
-            const playerPosition = player.getAttribute('position');
-            let closestPlane = null;
-            let closestDistance = Infinity;
-
-            document.querySelectorAll('.video-plane').forEach(plane => {
-                const planePosition = plane.getAttribute('position');
-                const distance = Math.sqrt(
-                    Math.pow(playerPosition.x - planePosition.x, 2) +
-                    Math.pow(playerPosition.y - planePosition.y, 2) +
-                    Math.pow(playerPosition.z - planePosition.z, 2)
-                );
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestPlane = plane.id;
-                }
-            });
-
-            document.getElementById('closestPlane').textContent = closestPlane || 'None';
-        }, 1000);
     </script>
-
 </body>
 </html>
