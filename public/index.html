@@ -247,7 +247,8 @@
         }
 
         // Update closest point every second
-        setInterval(updateClosestPoint, 1000);
+        setInterval(updateClosestPoint, 2000);
+
 
     
         // Joystick setup
@@ -277,9 +278,9 @@
 
             // Calculate the movement direction based on joystick input
             const moveDirection = new THREE.Vector3(
-                cameraDirection.z * Math.cos(rad) + cameraDirection.x * Math.sin(rad), // Swapped to make 'up' move left
+                cameraDirection.z * Math.cos(rad) + cameraDirection.x *- Math.sin(rad), // Swapped to make 'up' move left
                 0, // Keep Y at 0 for 2D movement
-                cameraDirection.z * Math.sin(rad) - cameraDirection.x * Math.cos(rad) // Swapped to make 'down' move right
+                cameraDirection.z *- Math.sin(rad) - cameraDirection.x * Math.cos(rad) // Swapped to make 'down' move right
             );
 
 

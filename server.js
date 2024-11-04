@@ -32,18 +32,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Receive closest player information from client
-    socket.on('closestPlayer', (data) => {
-        if (players[socket.id]) {
-            // You can store closest player info in players object
-            players[socket.id].closestPoint = data.closestPoint;
-            players[socket.id].closestDistance = data.closestDistance;
-
-            // Notify other players about the closest player info
-            socket.broadcast.emit('closestPlayerUpdate', { id: socket.id, closestPoint: data.closestPoint, closestDistance: data.closestDistance });
-        }
-    });
-
     // Handle player disconnection
     socket.on('disconnect', () => {
         console.log('Player disconnected:', socket.id);
