@@ -126,13 +126,18 @@
 
         
         <!-- Lights -->
-        <a-light type="ambient" color="#FFF" intensity="0.6"></a-light>
+        <a-light type="ambient" color="#FFF" intensity="3"></a-light>
         <a-light type="directional" color="#FFF" intensity="1" position="-1 2 1" castShadow="true"></a-light>
         
         
         <!-- Load the model -->
-        <a-entity gltf-model="models/Test.glb" position="0 0.5 0" scale="1 1 1" material="emissive: #FF0000; emissiveIntensity: 0.1"></a-entity>
-
+        <a-entity 
+            gltf-model="models/Test.glb" 
+            position="0 0.5 0" 
+            scale="1 1 1" 
+            material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1" 
+            shadow="receive: true; cast: true">
+        </a-entity>
 
         <!-- Video planes for streaming -->
         <a-plane id="videoPlane" rotation="0 0 0" width="5" height="3" position="0 4 -10" visible="false" class="video-plane"></a-plane>
@@ -144,8 +149,10 @@
         <!-- Sky -->
         <a-sky color="#E9CFC7"></a-sky>
 
-        <a-entity id="player" position="0 1.6 0">
-            <a-camera></a-camera>
+        <!-- Player Entity -->
+        <a-entity id="player" position="0 1 0">  <!-- Player sphere at height 1 -->
+            <a-sphere radius="0.5" color="#FF0000"></a-sphere> <!-- Optional player sphere -->
+            <a-camera position="0 25 0"></a-camera>  <!-- Camera at height 15 (1 + 14) -->
         </a-entity>
 
     </a-scene>
@@ -194,15 +201,24 @@
         });
 
     
-        // Create a red sphere for each player
+        // Create a sphere for each player
         function createPlayerSphere(id, position) {
             const sphere = document.createElement('a-sphere');
-            sphere.setAttribute('color', 'red');
+            
+            // Check if the current player is the local player
+            if (id === socket.id) {
+                sphere.setAttribute('color', 'green'); // Local player color
+            } else {
+                sphere.setAttribute('color', 'red'); // Other players' color
+            }
+
             sphere.setAttribute('radius', '0.5');
             sphere.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
             document.querySelector('a-scene').appendChild(sphere);
             players[id] = sphere; // Associate the sphere with the player ID
         }
+
+        
 
     
         // Joystick setup
@@ -242,6 +258,7 @@
             player.object3D.position.x += moveDirection.x * moveDistance;
             player.object3D.position.z += moveDirection.z * moveDistance;
 
+
             // Update the player's sphere position to match the player entity
             const playerSphere = players[socket.id]; // Get the sphere associated with this player
             if (playerSphere) {
@@ -253,6 +270,8 @@
         });
 
 
+
+        
 
         console.log('Emitting position:', player.object3D.position);
         console.log('Received move for ID:', data.id, 'Position:', data.position);
