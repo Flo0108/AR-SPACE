@@ -181,18 +181,20 @@
     <div id="closest-player">Closest Player: None</div> <!-- New text object for closest player -->
 
     <script>
-        
+
         // Access the user's webcam
         const video = document.querySelector('#webcam');
 
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(function(err) {
-                console.error("Error accessing webcam: " + err);
-            });
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' } // 'user' for front camera, 'environment' for rear camera
+        })
+        .then(function(stream) {
+            video.srcObject = stream;
+            video.play();
+        })
+        .catch(function(err) {
+            console.error("Error accessing webcam: " + err);
+        });
 
             
         const socket = io(window.location.origin);
