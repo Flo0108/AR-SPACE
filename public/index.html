@@ -138,6 +138,16 @@
             shadow="receive: true; cast: true">
         </a-entity>
 
+        <!-- Load the model -->
+        <a-entity 
+            gltf-model="models/Test_rotate.glb" 
+            position="0 0.5 0" 
+            scale="1 1 1" 
+            material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1" 
+            shadow="receive: true; cast: true"
+            color="#4CC3D9" 
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 20000;">
+        </a-entity>
 
         <!-- Player Entity -->
         <a-entity id="player" position="0 1 0">  <!-- Player sphere at height 1 -->
@@ -180,6 +190,18 @@
     <div id="closest-player">Closest Player: None</div> <!-- New text object for closest player -->
 
     <script>
+
+
+        AFRAME.registerComponent('rotate', {
+                schema: {
+                    speed: {type: 'number', default: 1} // Rotation speed
+                },
+                tick: function () {
+                    const el = this.el; // Reference to the entity
+                    const data = this.data; // Component data
+                    el.object3D.rotation.y += data.speed * 0.01; // Adjust speed as needed
+                }
+            });
 
         // Access the user's webcam
         const video = document.querySelector('#webcam');
