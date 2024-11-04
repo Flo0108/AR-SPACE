@@ -125,13 +125,13 @@
     <a-scene embedded>
 
         <!-- Lights -->
-        <a-light type="ambient" color="#FFF" intensity="3"></a-light>
-        <a-light type="directional" color="#FFF" intensity="1" position="-1 2 1" castShadow="true"></a-light>
+        <a-light type="ambient" color="#FFF" intensity="1"></a-light>
+        <a-light type="directional" color="#FFF" intensity="1" position="0 2 0" castShadow="true"></a-light>
         
 
         <!-- Load the model -->
         <a-entity 
-            gltf-model="models/Test.glb" 
+            gltf-model="models/Testarena.glb" 
             position="0 0.5 0" 
             scale="1 1 1" 
             material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1" 
@@ -140,13 +140,13 @@
 
         <!-- Load the model -->
         <a-entity 
-            gltf-model="models/Test_rotate.glb" 
+            gltf-model="models/Testarenafloor.glb" 
             position="0 0.5 0" 
             scale="1 1 1" 
             material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1" 
             shadow="receive: true; cast: true"
             color="#4CC3D9" 
-            animation="property: rotation; to: 0 360 0; loop: true; dur: 20000;">
+            animation="property: rotation; to: 0 360 0; loop: true; dur: 100000;">
         </a-entity>
 
         <!-- Player Entity -->
@@ -157,13 +157,13 @@
 
         <!-- Points in the scene (with visual spheres) -->
         <a-entity id="point1" position="-10 2 10">
-            <a-sphere radius="1" color="#00FF00"></a-sphere> <!-- Green Sphere for Point 2 -->
+            <a-sphere radius="0.01" color="#00FF00"></a-sphere> <!-- Green Sphere for Point 2 -->
         </a-entity>
         <a-entity id="point2" position="10 2 10">
-            <a-sphere radius="1" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
+            <a-sphere radius="0.01" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
         </a-entity>
         <a-entity id="point3" position="0 2 -10">
-            <a-sphere radius="1" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
+            <a-sphere radius="0.01" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
         </a-entity>
 
 
@@ -207,7 +207,7 @@
         const video = document.querySelector('#webcam');
 
         navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user' } // 'user' for front camera, 'environment' for rear camera
+            video: { facingMode: 'environment' } // 'user' for front camera, 'environment' for rear camera
         })
         .then(function(stream) {
             video.srcObject = stream;
