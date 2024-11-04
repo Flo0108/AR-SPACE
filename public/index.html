@@ -91,6 +91,11 @@
                 top: 30px; /* Adjust space from the top */
             }
 
+            #support-counts {
+                width: 45%; /* width on mobile */
+                height: auto; /* Maintain aspect ratio */
+                top: 30px; /* Adjust space from the top */
+            }
             
             #joystick {
                 width: 60px; /* Smaller joystick size for mobile */
@@ -373,7 +378,7 @@
         // Update loop
         function update() {
             if (joystickActive) {
-                const moveDistance = 0.1; // Movement speed
+                const moveDistance = 0.25; // Movement speed
 
                 // Update player position based on the calculated direction
                 player.object3D.position.x += currentMoveDirection.x * moveDistance;
