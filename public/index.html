@@ -176,7 +176,6 @@
 
 
 
-
     <div id="joystick"></div>
     <div id="closest-player">Closest Player: None</div> <!-- New text object for closest player -->
 
@@ -186,7 +185,7 @@
         const video = document.querySelector('#webcam');
 
         navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' } // 'user' for front camera, 'environment' for rear camera
+            video: { facingMode: 'user' } // 'user' for front camera, 'environment' for rear camera
         })
         .then(function(stream) {
             video.srcObject = stream;
@@ -297,10 +296,13 @@
             color: 'red'
         });
     
+        let joystickActive = false; // Track joystick activity
+        let currentMoveDirection = new THREE.Vector3(); // Store the current move direction
 
         // Joystick movement handling
         joystick.on('move', (evt, data) => {
-            const moveDistance = 0.1; // Movement speed
+            joystickActive = true; // Joystick is being manipulated
+            const moveDistance = 0.3; // Movement speed
             const angle = data.angle.degree;
 
             const rad = angle * (Math.PI / 180); // Convert to radians
@@ -314,27 +316,43 @@
             cameraDirection.normalize(); // Normalize to get a unit vector
 
             // Calculate the movement direction based on joystick input
-            const moveDirection = new THREE.Vector3(
-                cameraDirection.z * Math.cos(rad) + cameraDirection.x *- Math.sin(rad), // Swapped to make 'up' move left
+            currentMoveDirection.set(
+                cameraDirection.z * Math.cos(rad) + cameraDirection.x * -Math.sin(rad), // Swapped to make 'up' move left
                 0, // Keep Y at 0 for 2D movement
-                cameraDirection.z *- Math.sin(rad) - cameraDirection.x * Math.cos(rad) // Swapped to make 'down' move right
+                cameraDirection.z * -Math.sin(rad) - cameraDirection.x * Math.cos(rad) // Swapped to make 'down' move right
             );
+        });
 
+        // Event when joystick is released
+        joystick.on('end', () => {
+            joystickActive = false; // Joystick is not being manipulated
+            currentMoveDirection.set(0, 0, 0); // Reset direction
+        });
 
-            // Update player position based on the calculated direction
-            player.object3D.position.x += moveDirection.x * moveDistance;
-            player.object3D.position.z += moveDirection.z * moveDistance;
+        // Update loop
+        function update() {
+            if (joystickActive) {
+                const moveDistance = 0.1; // Movement speed
 
+                // Update player position based on the calculated direction
+                player.object3D.position.x += currentMoveDirection.x * moveDistance;
+                player.object3D.position.z += currentMoveDirection.z * moveDistance;
 
-            // Update the player's sphere position to match the player entity
-            const playerSphere = players[socket.id]; // Get the sphere associated with this player
-            if (playerSphere) {
-                playerSphere.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y} ${player.object3D.position.z}`);
+                // Update the player's sphere position to match the player entity
+                const playerSphere = players[socket.id]; // Get the sphere associated with this player
+                if (playerSphere) {
+                    playerSphere.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y} ${player.object3D.position.z}`);
+                }
+
+                // Emit the new position to the server
+                socket.emit('move', { id: socket.id, position: player.object3D.position });
             }
 
-            // Emit the new position to the server
-            socket.emit('move', { id: socket.id, position: player.object3D.position });
-        });
+            requestAnimationFrame(update); // Continue the update loop
+        }
+
+        // Start the update loop
+        update();
 
 
 
