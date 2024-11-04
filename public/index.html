@@ -43,7 +43,7 @@
             padding: 10px;
             border-radius: 5px;
             z-index: 10; /* Ensure it appears above the A-Frame */
-            font-size: 18px;
+            font-size: 12px;
         }
 
         iframe {
@@ -65,7 +65,7 @@
             padding: 10px;
             border-radius: 5px;
             font-family: Arial, sans-serif;
-            font-size: 25px;
+            font-size: 14px;
             z-index: 21; /* Space from the top */
         }
 
@@ -100,14 +100,15 @@
             }
 
             iframe {
-                width: 60%; /* width on mobile */
+                width: 45%; /* width on mobile */
                 height: auto; /* Maintain aspect ratio */
-                top: 50px; /* Adjust space from the top */
+                top: 30px; /* Adjust space from the top */
             }
 
+            
             #joystick {
-                width: 100px; /* Smaller joystick size for mobile */
-                height: 100px; /* Smaller joystick size for mobile */
+                width: 60px; /* Smaller joystick size for mobile */
+                height: 60px; /* Smaller joystick size for mobile */
             }
         }
 
@@ -279,9 +280,9 @@
             const { pointCounts } = data;
 
             // Update the HTML with the latest counts
-            document.getElementById('point1Count').textContent = `Point 1 Supporters: ${pointCounts.point1}`;
-            document.getElementById('point2Count').textContent = `Point 2 Supporters: ${pointCounts.point2}`;
-            document.getElementById('point3Count').textContent = `Point 3 Supporters: ${pointCounts.point3}`;
+            document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCounts.point1}`;
+            document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCounts.point2}`;
+            document.getElementById('point3Count').textContent = `Player 3 Supporters: ${pointCounts.point3}`;
         });
 
 
@@ -328,7 +329,7 @@
             });
 
             // Update the closest point text
-            closestPlayerDiv.textContent = closestPoint ? `You are supporting: ${closestPoint}` : 'You are supporting: None';
+            closestPlayerDiv.textContent = closestPoint ? `Supporting: ${closestPoint}` : 'Supporting: None';
         
             // Send the closest point to the server
             socket.emit('updateSupportPoint', {
