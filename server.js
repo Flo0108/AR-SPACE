@@ -10,6 +10,9 @@ app.use(express.static('public'));
 
 const players = {};
 const playerNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'];
+const playerSupportPoints = {}; // Store each player’s support point
+const pointCounts = { point1: 0, point2: 0, point3: 0 }; // Initial counts for each point
+
 
 io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
@@ -31,11 +34,51 @@ io.on('connection', (socket) => {
             socket.broadcast.emit('move', { id: socket.id, position: data.position });
         }
     });
+    
+
+    // Handle updates from players about their support point
+    socket.on('updateSupportPoint', (data) => {
+        const { playerId, supportPoint } = data;
+        const previousPoint = playerSupportPoints[playerId];
+
+        if (previousPoint !== supportPoint) {
+            // Decrement the count for the previous point
+            if (previousPoint) {
+                pointCounts[previousPoint] = Math.max(pointCounts[previousPoint] - 1, 0);
+            }
+
+            // Increment the count for the new support point
+            pointCounts[supportPoint] = (pointCounts[supportPoint] || 0) + 1;
+
+            // Update the player's current support point
+            playerSupportPoints[playerId] = supportPoint;
+
+            // Prepare the data to send back to the players
+            const supportData = {
+                pointCounts, // Current count of players at each point
+                playerId, // Player who triggered the update
+                supportPoint // Their new support point
+            };
+
+            // Send the data to the specific player who moved
+            socket.emit('supportPointUpdate', supportData);
+
+            // Broadcast the update to all other players
+            socket.broadcast.emit('supportPointUpdate', supportData);
+
+            console.log(`Updated support counts:`, pointCounts);
+        }
+    });
 
     // Handle player disconnection
     socket.on('disconnect', () => {
         console.log('Player disconnected:', socket.id);
         delete players[socket.id];
+        const supportPoint = playerSupportPoints[socket.id];
+        if (supportPoint) {
+            pointCounts[supportPoint] = Math.max(pointCounts[supportPoint] - 1, 0);
+        }
+        delete playerSupportPoints[socket.id];
         socket.broadcast.emit('playerDisconnected', socket.id);
     });
 });

@@ -56,6 +56,19 @@
             z-index: 20; /* Higher z-index to sit above the A-Frame */
         }
 
+        #support-counts {
+            position: absolute;
+            left: 10px;
+            bottom: 300px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            font-size: 25px;
+            z-index: 21; /* Space from the top */
+        }
+
         #joystick {
             position: fixed;
             bottom: 100px; /* Distance from the bottom of the screen */
@@ -180,11 +193,12 @@
 
 
 
-
-
-
-
-
+    <div id="support-counts">
+        <p id="None">CURRENT SCORE</p>
+        <p id="point1Count">Player 1 Supporters: 0</p>
+        <p id="point2Count">Player 2 Supporters: 0</p>
+        <p id="point3Count">Player 3 Supporters: 0</p>
+    </div>
 
     <div id="joystick"></div>
     <div id="closest-player">Closest Player: None</div> <!-- New text object for closest player -->
@@ -226,9 +240,9 @@
 
         // Points in the scene
         const points = [
-            { id: 'PLAYER 1', element: document.getElementById('point1') },
-            { id: 'PLAYER 2', element: document.getElementById('point2') },
-            { id: 'PLAYER 3', element: document.getElementById('point3') }
+            { id: 'point1', element: document.getElementById('point1') },
+            { id: 'point2', element: document.getElementById('point2') },
+            { id: 'point3', element: document.getElementById('point3') }
         ];
 
         // Handle the current players on initial connection
@@ -259,6 +273,19 @@
                 delete players[id];
             }
         });
+
+        // Listen for support point updates from the server
+        socket.on('supportPointUpdate', (data) => {
+            const { pointCounts } = data;
+
+            // Update the HTML with the latest counts
+            document.getElementById('point1Count').textContent = `Point 1 Supporters: ${pointCounts.point1}`;
+            document.getElementById('point2Count').textContent = `Point 2 Supporters: ${pointCounts.point2}`;
+            document.getElementById('point3Count').textContent = `Point 3 Supporters: ${pointCounts.point3}`;
+        });
+
+
+
 
         // Create a sphere for each player
         function createPlayerSphere(id, position) {
@@ -302,6 +329,13 @@
 
             // Update the closest point text
             closestPlayerDiv.textContent = closestPoint ? `You are supporting: ${closestPoint}` : 'You are supporting: None';
+        
+            // Send the closest point to the server
+            socket.emit('updateSupportPoint', {
+                playerId: socket.id,  // Send player ID to the server
+                supportPoint: closestPoint // Send closest point ID
+            });
+        
         }
 
         // Update closest point every second
@@ -324,7 +358,7 @@
         // Joystick movement handling
         joystick.on('move', (evt, data) => {
             joystickActive = true; // Joystick is being manipulated
-            const moveDistance = 0.3; // Movement speed
+            const moveDistance = 0.6; // Movement speed
             const angle = data.angle.degree;
 
             const rad = angle * (Math.PI / 180); // Convert to radians
