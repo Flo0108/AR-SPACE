@@ -70,17 +70,23 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle camera_master toggle commands
-    io.on('connection', (socket) => {
-        console.log('A user connected');
-    
-        // Listen for visibility toggle from the master
-        socket.on('toggleModelVisibility', (newVisibility) => {
-            // Emit the visibility change to all clients
-            socket.broadcast.emit('updateModelVisibility', newVisibility);
-        });
 
+    // When the visibility is toggled
+    socket.on('toggleModelVisibility', (newVisibility) => {
+        // Broadcast to all clients to sync the visibility
+        socket.broadcast.emit('toggleModelVisibility', newVisibility);
     });
+
+    // When the message should be shown
+    socket.on('showVoteMessage', () => {
+        socket.broadcast.emit('showVoteMessage');
+    });
+
+    // When the message should be hidden
+    socket.on('hideVoteMessage', () => {
+        socket.broadcast.emit('hideVoteMessage');
+    });
+
 
     // Handle player disconnection
     socket.on('disconnect', () => {

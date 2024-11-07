@@ -208,12 +208,23 @@
         <button class="admin-button" onclick="toggleFeature()">Toggle Feature</button>
     </div>
 
+    <!-- Text for displaying the messages -->
+    <div id="voteMessageUI" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; display: none; text-align: center;z-index: 9999">
+        <div id="gameStartedText">NEW GAMEMODE</div>
+        <div id="voteText">Players may now vote for effects</div>
+    </div>
+
+    <!-- Audio Element (hidden by default) -->
+    <audio id="notificationSound" src="public/soundeffects/new_round.mp3" preload="auto"></audio>
+
+
     <!-- A-Frame Scene -->
     <a-scene embedded>
 
         <!-- Lights -->
         <a-light type="ambient" color="#FFF" intensity="1"></a-light>
         <a-light type="directional" color="#FFF" intensity="1" position="0 2 0" castShadow="true"></a-light>
+
 
 
         <!-- GLTF Model 1 -->
@@ -335,7 +346,22 @@
 
             // Send a message to other clients to sync the visibility
             socket.emit('toggleModelVisibility', newVisibility);
+
+            // Play sound effect if visibility is toggled to true
+            if (newVisibility) {
+                // Play the sound
+                const notificationSound = document.getElementById('notificationSound');
+                notificationSound.play();
+
+                // Show the message for 5 seconds
+                document.getElementById('voteMessageUI').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('voteMessageUI').style.display = 'none';
+                }, 5000);
+            }
         }
+
+
 
 
 
@@ -346,14 +372,25 @@
         });
 
 
-        // When camera_master toggles visibility, emit to all clients
-        socket.on('toggleModelVisibility', () => {
-            const visibilityData = {
-                modelId: 'modelContainer', // replace with actual model ID
-                visibility: true // or false, depending on desired state
-            };
-            io.emit('updateModelVisibility', visibilityData);
+        // Listen for the toggle visibility sync
+        socket.on('toggleModelVisibility', (newVisibility) => {
+            const modelContainer = document.getElementById('modelContainer');
+            modelContainer.setAttribute('visible', newVisibility);
         });
+
+        // Listen for showing the vote message UI
+        socket.on('showVoteMessage', () => {
+            const voteMessageUI = document.getElementById('voteMessageUI');
+            voteMessageUI.style.display = 'block'; // Show the message
+        });
+
+        // Listen for hiding the vote message UI
+        socket.on('hideVoteMessage', () => {
+            const voteMessageUI = document.getElementById('voteMessageUI');
+            voteMessageUI.style.display = 'none'; // Hide the message
+        });
+
+
 
 
 
