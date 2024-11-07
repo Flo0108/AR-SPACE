@@ -4,6 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+
+        /* Full-screen overlay styles */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9); /* Dark semi-transparent background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999; /* Ensure it overlays everything */
+            color: white;
+        }
+
+        #overlay h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        #playerNameInput {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            width: 60%;
+            max-width: 300px;
+            text-align: center;
+            border-radius: 5px;
+            border: none;
+        }
+
+        #joinButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #joinButton:hover {
+            background-color: #45a049;
+        }
+
+        /* Admin control button styles */
+        #adminControls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: none; /* Hidden by default */
+            z-index: 60; /* Video below A-Frame */
+        }
+
+        .admin-button {
+            padding: 10px 15px;
+            font-size: 14px;
+            margin: 5px;
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 60; /* Video below A-Frame */
+        }
+
+
+
         body {
             display: flex;
             flex-direction: column;
@@ -125,6 +195,18 @@
 </head>
 <body>
 
+    <!-- Full-screen overlay for name input -->
+    <div id="overlay">
+        <h2>Enter Your Name</h2>
+        <input type="text" id="playerNameInput" placeholder="Your Name">
+        <button id="joinButton" onclick="submitName()">Join</button>
+    </div>
+
+    <!-- Admin controls only for "camera_master" -->
+    <div id="adminControls">
+        <button class="admin-button" onclick="triggerSpecialAction()">Special Action</button>
+        <button class="admin-button" onclick="toggleFeature()">Toggle Feature</button>
+    </div>
 
     <!-- A-Frame Scene -->
     <a-scene embedded>
@@ -132,33 +214,54 @@
         <!-- Lights -->
         <a-light type="ambient" color="#FFF" intensity="1"></a-light>
         <a-light type="directional" color="#FFF" intensity="1" position="0 2 0" castShadow="true"></a-light>
-        
 
-        <!-- Load the model -->
-        <a-entity 
-            gltf-model="models/Testarena.glb" 
-            position="0 0.5 0" 
-            scale="1 1 1" 
-            material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1" 
-            shadow="receive: true; cast: true">
+
+        <!-- GLTF Model 1 -->
+        <a-entity gltf-model="models/Testarena.glb"
+                    position="0 0.5 0"
+                    scale="1 1 1"
+                    material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
+                    shadow="receive: true; cast: true">
         </a-entity>
 
-        <!-- Load the model -->
-        <a-entity 
-            gltf-model="models/Testarenafloor.glb" 
-            position="0 0.5 0" 
-            scale="1 1 1" 
-            material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1" 
-            shadow="receive: true; cast: true"
-            color="#4CC3D9" 
-            animation="property: rotation; to: 0 360 0; loop: true; dur: 100000;">
+
+        <!-- Model visibility wrapper - initially hidden -->
+        <a-entity id="modelContainer" visible="false">
+            <!-- GLTF Model 2 -->
+            <a-entity gltf-model="models/Testarenafloor.glb"
+                      position="0 0.5 0"
+                      scale="1 1 1"
+                      material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
+                      shadow="receive: true; cast: true"
+                      color="#4CC3D9">
+            </a-entity>
+       
+            <!-- Objects that change color when looked at -->
+            <a-box class="interactive-box" position="13 5 25" color="purple" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="-13 5 25" color="purple" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="0  5 45" color="purple" scale="7 7 7"></a-box>
+
+
+            <a-box class="interactive-box" position="13  5 -25" color="lightblue" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="40  5 -25" color="lightblue" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="27  5 0" color="lightblue" scale="7 7 7"></a-box>
+
+            <a-box class="interactive-box" position="-13 5 -25" color="darkblue" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="-40 5 -25" color="darkblue" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="-27 5 0" color="darkblue" scale="7 7 7"></a-box>
+
         </a-entity>
+
 
         <!-- Player Entity -->
-        <a-entity id="player" position="0 1 0">  <!-- Player sphere at height 1 -->
+        <a-entity id="player" position="0 1 0">
+            <!-- Player sphere at height 1 -->
             <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere> <!-- Optional player sphere -->
-            <a-camera position="0 40 0"></a-camera>  <!-- Camera at height 15 (1 + 14) -->
-        </a-entity>
+            <!-- Camera with raycaster at height 40 -->
+            <a-camera position="0 40 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
+            <!-- Text to display the player name above the avatar -->
+            <a-text id="playerNameText" value="" position="0 2 -1" align="center" color="white"></a-text>
+            </a-entity>
 
         <!-- Points in the scene (with visual spheres) -->
         <a-entity id="point1" position="-10 2 10">
@@ -170,6 +273,11 @@
         <a-entity id="point3" position="0 2 -10">
             <a-sphere radius="0.01" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
         </a-entity>
+
+
+
+
+
 
 
     </a-scene>
@@ -196,6 +304,57 @@
     <div id="closest-player">Closest Player: None</div> <!-- New text object for closest player -->
 
     <script>
+
+        const socket = io(window.location.origin);
+
+        // Function to handle name submission
+        function submitName() {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+
+            if (playerName === '') {
+                alert("Please enter a name.");
+                return;
+            }
+
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('playerNameText').setAttribute('value', playerName);
+
+            if (playerName === 'camera_master') {
+                document.getElementById('adminControls').style.display = 'block';
+            }
+        }
+        
+        
+        function triggerSpecialAction() {
+            const modelContainer = document.getElementById('modelContainer');
+            
+            // Toggle visibility
+            const currentVisibility = modelContainer.getAttribute('visible');
+            const newVisibility = currentVisibility === 'true' ? 'false' : 'true';
+            modelContainer.setAttribute('visible', newVisibility);
+
+            // Send a message to other clients to sync the visibility
+            socket.emit('toggleModelVisibility', newVisibility);
+        }
+
+
+        // Client-side (JavaScript)
+        socket.on('updateModelVisibility', (newVisibility) => {
+            const modelContainer = document.getElementById('modelContainer');
+            modelContainer.setAttribute('visible', newVisibility);
+        });
+
+
+        // When camera_master toggles visibility, emit to all clients
+        socket.on('toggleModelVisibility', () => {
+            const visibilityData = {
+                modelId: 'modelContainer', // replace with actual model ID
+                visibility: true // or false, depending on desired state
+            };
+            io.emit('updateModelVisibility', visibilityData);
+        });
+
+
 
 
         AFRAME.registerComponent('rotate', {
@@ -224,7 +383,8 @@
         });
 
             
-        const socket = io(window.location.origin);
+            
+
         let players = {};
         const player = document.getElementById('player'); // Get player entity
         const camera = player.querySelector('a-camera');  // Camera within player
@@ -404,6 +564,41 @@
 
 
 
+        // Select all box objects with the class 'interactive-box'
+        const boxes = document.querySelectorAll('.interactive-box');
+
+        // Loop through each box and add event listeners
+        boxes.forEach((box) => {
+            let isIntersected = false;
+
+            // Store the original color in a dataset attribute
+            box.dataset.originalColor = box.getAttribute('color');
+
+
+            // Event listener for intersection
+            box.addEventListener('raycaster-intersected', () => {
+                box.setAttribute('material', 'color', 'yellow');
+            });
+
+
+            // Event listener for clearing intersection
+            box.addEventListener('raycaster-intersected-cleared', () => {
+                // Reset to original color
+                const originalColor = box.dataset.originalColor;
+                box.setAttribute('material', 'color', originalColor);
+            });
+
+            // Add click listener to change color to red temporarily
+            box.addEventListener('click', () => {
+                if (isIntersected) { // Only allow tapping when looked at directly
+                    box.setAttribute('material', 'color', 'red');
+                    setTimeout(() => {
+                        // Return to blue if still intersected; otherwise, yellow
+                        box.setAttribute('material', 'color', isIntersected ? 'blue' : 'yellow');
+                    }, 3000); // 3-second delay
+                }
+            });
+        });
 
         
         console.log('DOM fully loaded and parsed');

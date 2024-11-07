@@ -70,6 +70,18 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Handle camera_master toggle commands
+    io.on('connection', (socket) => {
+        console.log('A user connected');
+    
+        // Listen for visibility toggle from the master
+        socket.on('toggleModelVisibility', (newVisibility) => {
+            // Emit the visibility change to all clients
+            socket.broadcast.emit('updateModelVisibility', newVisibility);
+        });
+
+    });
+
     // Handle player disconnection
     socket.on('disconnect', () => {
         console.log('Player disconnected:', socket.id);
@@ -82,6 +94,7 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('playerDisconnected', socket.id);
     });
 });
+
 
 const PORT = 3000;
 server.listen(PORT, () => {
