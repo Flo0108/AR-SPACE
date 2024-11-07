@@ -276,10 +276,6 @@
 
 
 
-
-
-
-
     </a-scene>
 
 
@@ -328,14 +324,19 @@
         function triggerSpecialAction() {
             const modelContainer = document.getElementById('modelContainer');
             
-            // Toggle visibility
+            // Get the current visibility (convert string to boolean)
             const currentVisibility = modelContainer.getAttribute('visible');
-            const newVisibility = currentVisibility === 'true' ? 'false' : 'true';
+            
+            // Toggle the visibility
+            const newVisibility = !currentVisibility; // Just toggle the boolean value
+            
+            // Set the new visibility (true/false, not string)
             modelContainer.setAttribute('visible', newVisibility);
 
             // Send a message to other clients to sync the visibility
             socket.emit('toggleModelVisibility', newVisibility);
         }
+
 
 
         // Client-side (JavaScript)
