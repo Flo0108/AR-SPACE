@@ -142,10 +142,12 @@
             position: absolute; /* Position the A-Frame absolutely */
             top: 0; /* Align to the top */
             left: 0; /* Align to the left */
-            width: 100%; /* Full width for A-Frame */
+            width: 100%; /* Full width for A-Frwame */
             height: 100%; /* Full height for A-Frame */
             z-index: 1; /* Lower z-index to place behind other elements */
         }
+
+
 
         /* Media Queries for Responsive Design */
         @media (max-width: 768px) {
@@ -205,7 +207,7 @@
     <!-- Admin controls only for "camera_master" -->
     <div id="adminControls">
         <button class="admin-button" onclick="triggerSpecialAction()">Special Action</button>
-        <button class="admin-button" onclick="toggleFeature()">Toggle Feature</button>
+        <button class="admin-button" onclick="triggerSpecialAction2()">Toggle Feature</button>
     </div>
 
     <!-- Text for displaying the messages -->
@@ -213,6 +215,7 @@
         <div id="gameStartedText">NEW GAMEMODE</div>
         <div id="voteText">Players may now vote for effects</div>
     </div>
+
 
     <!-- Audio Element (hidden by default) -->
     <audio id="notificationSound" src="public/soundeffects/new_round.mp3" preload="auto"></audio>
@@ -229,7 +232,8 @@
 
         <!-- GLTF Model 1 -->
         <a-entity gltf-model="models/Testarena.glb"
-                    position="0 0.5 0"
+                    visible="true"
+                    position="0 0 0"
                     scale="1 1 1"
                     material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
                     shadow="receive: true; cast: true">
@@ -248,19 +252,32 @@
             </a-entity>
        
             <!-- Objects that change color when looked at -->
-            <a-box class="interactive-box" position="13 5 25" color="purple" scale="7 7 7"></a-box>
-            <a-box class="interactive-box" position="-13 5 25" color="purple" scale="7 7 7"></a-box>
-            <a-box class="interactive-box" position="0  5 45" color="purple" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="20 5 40" color="purple" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="40 5 1" color="purple" scale="7 7 7"></a-box>
+        
+            <!-- Objects that change color when looked at -->
+            <a-box class="interactive-box" position="-20 5 40" color="purple" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position="-40 5 1" color="purple" scale="7 7 7"></a-box>
+        
+            <!-- Objects that change color when looked at -->
+            <a-box class="interactive-box" position="-20 5 -35" color="purple" scale="7 7 7"></a-box>
+            <a-box class="interactive-box" position=" 20 5 -35" color="purple" scale="7 7 7"></a-box>
+        
+        
+        </a-entity>
 
+        <!-- Model visibility wrapper - initially hidden -->
+        <a-entity id="modelContainer2" visible="false">
+            <!-- GLTF Model 2 -->
+            <a-entity gltf-model="models/Testarenafloor2.glb"
+                      position="0 0 0"
+                      scale="1 1 1"
+                      material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
+                      shadow="receive: true; cast: true"
+                      color="#4CC3D9">
+            </a-entity>
 
-            <a-box class="interactive-box" position="13  5 -25" color="lightblue" scale="7 7 7"></a-box>
-            <a-box class="interactive-box" position="40  5 -25" color="lightblue" scale="7 7 7"></a-box>
-            <a-box class="interactive-box" position="27  5 0" color="lightblue" scale="7 7 7"></a-box>
-
-            <a-box class="interactive-box" position="-13 5 -25" color="darkblue" scale="7 7 7"></a-box>
-            <a-box class="interactive-box" position="-40 5 -25" color="darkblue" scale="7 7 7"></a-box>
-            <a-box class="interactive-box" position="-27 5 0" color="darkblue" scale="7 7 7"></a-box>
-
+        
         </a-entity>
 
 
@@ -269,23 +286,24 @@
             <!-- Player sphere at height 1 -->
             <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere> <!-- Optional player sphere -->
             <!-- Camera with raycaster at height 40 -->
-            <a-camera position="0 40 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
+            <a-camera position="0 1.5 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
             <!-- Text to display the player name above the avatar -->
             <a-text id="playerNameText" value="" position="0 2 -1" align="center" color="white"></a-text>
             </a-entity>
 
         <!-- Points in the scene (with visual spheres) -->
-        <a-entity id="point1" position="-10 2 10">
-            <a-sphere radius="0.01" color="#00FF00"></a-sphere> <!-- Green Sphere for Point 2 -->
+        <a-entity id="point1" position="-20 2 12.5">
+            <a-sphere radius="2" color="#00FF00"></a-sphere> <!-- Green Sphere for Point 2 -->
         </a-entity>
-        <a-entity id="point2" position="10 2 10">
-            <a-sphere radius="0.01" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
+        <a-entity id="point2" position="20 2 12.5">
+            <a-sphere radius="2" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
         </a-entity>
-        <a-entity id="point3" position="0 2 -10">
-            <a-sphere radius="0.01" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
+        <a-entity id="point3" position="0 2 -25">
+            <a-sphere radius="2" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
         </a-entity>
-
-
+        <a-entity id="point4" position="0 0 0">
+            <a-sphere radius="2" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
+        </a-entity>
 
     </a-scene>
 
@@ -362,6 +380,34 @@
         }
 
 
+        function triggerSpecialAction2() {
+            const modelContainer = document.getElementById('modelContainer2');
+            
+            // Get the current visibility (convert string to boolean)
+            const currentVisibility = modelContainer.getAttribute('visible');
+            
+            // Toggle the visibility
+            const newVisibility = !currentVisibility; // Just toggle the boolean value
+            
+            // Set the new visibility (true/false, not string)
+            modelContainer.setAttribute('visible', newVisibility);
+
+            // Send a message to other clients to sync the visibility
+            socket.emit('toggleModelVisibility2', newVisibility);
+
+            // Play sound effect if visibility is toggled to true
+            if (newVisibility) {
+                // Play the sound
+                const notificationSound = document.getElementById('notificationSound');
+                notificationSound.play();
+
+                // Show the message for 5 seconds
+                document.getElementById('voteMessageUI').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('voteMessageUI').style.display = 'none';
+                }, 5000);
+            }
+        }
 
 
 
@@ -374,7 +420,13 @@
 
         // Listen for the toggle visibility sync
         socket.on('toggleModelVisibility', (newVisibility) => {
-            const modelContainer = document.getElementById('modelContainer');
+            const modelContainer = document.getElementById('modelContainer2');
+            modelContainer.setAttribute('visible', newVisibility);
+        });
+
+        // Listen for the toggle visibility sync
+        socket.on('toggleModelVisibility2', (newVisibility) => {
+            const modelContainer = document.getElementById('modelContainer2');
             modelContainer.setAttribute('visible', newVisibility);
         });
 
@@ -432,7 +484,8 @@
         const points = [
             { id: 'point1', element: document.getElementById('point1') },
             { id: 'point2', element: document.getElementById('point2') },
-            { id: 'point3', element: document.getElementById('point3') }
+            { id: 'point3', element: document.getElementById('point3') },
+            { id: 'point4', element: document.getElementById('point4') }
         ];
 
         // Handle the current players on initial connection
@@ -464,15 +517,6 @@
             }
         });
 
-        // Listen for support point updates from the server
-        socket.on('supportPointUpdate', (data) => {
-            const { pointCounts } = data;
-
-            // Update the HTML with the latest counts
-            document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCounts.point1}`;
-            document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCounts.point2}`;
-            document.getElementById('point3Count').textContent = `Player 3 Supporters: ${pointCounts.point3}`;
-        });
 
 
 
@@ -638,11 +682,145 @@
             });
         });
 
+
+
+
+
+
+
+
+
+        // Recursive function to subdivide and collect triangles
+        function subdivideAndCollectTriangles(x1, y1, x2, y2, x3, y3, depth, scaleFactor, triangles) {
+        if (depth === 0) {
+            triangles.push(scaleTriangle(x1, y1, x2, y2, x3, y3, scaleFactor));
+            return;
+        }
+
+        const midX1 = (x1 + x2) / 2;
+        const midY1 = (y1 + y2) / 2;
+        const midX2 = (x2 + x3) / 2;
+        const midY2 = (y2 + y3) / 2;
+        const midX3 = (x3 + x1) / 2;
+        const midY3 = (y3 + y1) / 2;
+
+        subdivideAndCollectTriangles(x1, y1, midX1, midY1, midX3, midY3, depth - 1, scaleFactor, triangles);
+        subdivideAndCollectTriangles(midX1, midY1, x2, y2, midX2, midY2, depth - 1, scaleFactor, triangles);
+        subdivideAndCollectTriangles(midX3, midY3, midX2, midY2, x3, y3, depth - 1, scaleFactor, triangles);
+        subdivideAndCollectTriangles(midX1, midY1, midX2, midY2, midX3, midY3, depth - 1, scaleFactor, triangles);
+        }
+
+        // Scale a triangle toward its centroid
+        function scaleTriangle(x1, y1, x2, y2, x3, y3, scaleFactor) {
+        const centerX = (x1 + x2 + x3) / 3;
+        const centerY = (y1 + y2 + y3) / 3;
+        return [
+            centerX + (x1 - centerX) * scaleFactor,
+            centerY + (y1 - centerY) * scaleFactor,
+            centerX + (x2 - centerX) * scaleFactor,
+            centerY + (y2 - centerY) * scaleFactor,
+            centerX + (x3 - centerX) * scaleFactor,
+            centerY + (y3 - centerY) * scaleFactor
+        ];
+        }
+
+        // Create a triangle element in A-Frame
+        function createATriangle(scene, x1, y1, x2, y2, x3, y3) {
+            const triangle = document.createElement('a-triangle');
+            triangle.setAttribute('vertex-a', `${x1 / 100} 0 ${y1 / 100}`);
+            triangle.setAttribute('vertex-b', `${x2 / 100} 0 ${y2 / 100}`);
+            triangle.setAttribute('vertex-c', `${x3 / 100} 0 ${y3 / 100}`);
+            scene.appendChild(triangle);
+            return triangle;
+        }
+
+        // Draw and display triangles based on subdivision depth
+        function drawAndDisplayTriangles(scene, subdivisionDepth, x1, y1, x2, y2, x3, y3, triangleGroup, triangleColor) {
+            const triangles = [];
+
+            // Collect triangles
+            subdivideAndCollectTriangles(x1, y1, x2, y2, x3, y3, subdivisionDepth, 0.9, triangles);
+
+            // Remove the previous triangles from the group
+            triangleGroup.forEach(triangle => triangle.parentNode.removeChild(triangle));
+
+            // Clear the triangle group array
+            triangleGroup.length = 0;
+
+            // Display triangles in A-Frame
+            triangles.forEach(triangle => {
+                const newTriangle = createATriangle(scene, ...triangle);
+                newTriangle.setAttribute('material', `color: hsl(${triangleColor + Math.random() * 40}, 50%, 50%); side: double`);
+                triangleGroup.push(newTriangle);
+            });
+        }
+
+        // Initial triangle coordinates for three positions
+        const width = 4000;  // Canvas width for 2D drawing
+        const height = 4000; // Canvas height for 2D drawing
+
+        xpos = -(width / 2)
+        ypos = - height * 1.3
+
+
+        const varxa = xpos
+        const varya = ypos
+
+        const varxb = xpos + width / 2
+        const varyb = ypos + height
+
+        const varxc = xpos - (width / 2)
+        const varyc = ypos + height
+
+        // Position 1
+        const x1a = width / 2 + varxa, y1a = 0 + varya;
+        const x2a = 0 + varxa, y2a = height - 0 + varya;
+        const x3a = width - 0 + varxa, y3a = height - 0 + varya;
+
+        const x1b = width / 2 + varxb, y1b = 0 + varyb;
+        const x2b = 0 + varxb, y2b = height - 0 + varyb;
+        const x3b = width - 0 + varxb, y3b = height - 0 + varyb;
+
+        // Position 3
+        const x1c = width / 2 + varxc, y1c = 0 + varyc;
+        const x2c = 0 + varxc, y2c = height - 0 + varyc;
+        const x3c = width - 0 + varxc, y3c = height - 0 + varyc;
+
+        const colora = 120
+        const colorb = 700
+        const colorc = 1400
+
+        // Create arrays to hold the triangles for each position
+        const triangleGroup1 = [];
+        const triangleGroup2 = [];
+        const triangleGroup3 = [];
+
+
+
+        // Listen for support point updates from the server
+        socket.on('supportPointUpdate', (data) => {
+            const { pointCounts } = data;
+
+            // Update the HTML with the latest counts
+            document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCounts.point1}`;
+            document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCounts.point2}`;
+            document.getElementById('point3Count').textContent = `Player 3 Supporters: ${pointCounts.point3}`;
+
+
+            const absval = pointCounts.point1 + pointCounts.point2 + pointCounts.point3
+
+            const val1 = Math.trunc((pointCounts.point1 / absval) * 5)
+            const val2 = Math.trunc((pointCounts.point2 / absval) * 5)
+            const val3 = Math.trunc((pointCounts.point3 / absval) * 5)
+
+            // Initial draw with subdivision depth of 3
+            drawAndDisplayTriangles(document.querySelector('a-scene'), val3, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora);
+            drawAndDisplayTriangles(document.querySelector('a-scene'), val2, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup2, colorb);
+            drawAndDisplayTriangles(document.querySelector('a-scene'), val1 , x1c, y1c, x2c, y2c, x3c, y3c, triangleGroup3, colorc);
+
+        });
         
         console.log('DOM fully loaded and parsed');
-        console.log('Emitting position:', player.object3D.position);
-        console.log('Received move for ID:', data.id, 'Position:', data.position);
-
     </script>
 </body>
 </html>

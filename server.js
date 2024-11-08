@@ -77,6 +77,12 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('toggleModelVisibility', newVisibility);
     });
 
+    // When the visibility is toggled
+    socket.on('toggleModelVisibility2', (newVisibility) => {
+        // Broadcast to all clients to sync the visibility
+        socket.broadcast.emit('toggleModelVisibility2', newVisibility);
+    });
+
     // When the message should be shown
     socket.on('showVoteMessage', () => {
         socket.broadcast.emit('showVoteMessage');
