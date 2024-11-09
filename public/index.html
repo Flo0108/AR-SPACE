@@ -206,14 +206,22 @@
 
     <!-- Admin controls only for "camera_master" -->
     <div id="adminControls">
-        <button class="admin-button" onclick="triggerSpecialAction()">Special Action</button>
-        <button class="admin-button" onclick="triggerSpecialAction2()">Toggle Feature</button>
+        <button class="admin-button" onclick="triggerSpecialAction()">Level 1</button>
+        <button class="admin-button" onclick="triggerSpecialAction2()">Level 2</button>
+        <button class="admin-button" onclick="endRound()">End Round</button>
+        <button class="admin-button" onclick="endGame()">New Game</button>
     </div>
 
     <!-- Text for displaying the messages -->
     <div id="voteMessageUI" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; display: none; text-align: center;z-index: 9999">
-        <div id="gameStartedText">NEW GAMEMODE</div>
+        <div id="gameStartedText">ROUND 1</div>
         <div id="voteText">Players may now vote for effects</div>
+    </div>
+
+    <!-- Text for displaying the messages -->
+    <div id="voteMessageUI2" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; display: none; text-align: center;z-index: 9999">
+        <div id="gameStartedText">ROUND 2</div>
+        <div id="voteText">Players may now vote for Facial Filters</div>
     </div>
 
 
@@ -424,13 +432,14 @@
         
         
         function triggerSpecialAction() {
+
             const modelContainer = document.getElementById('modelContainer');
             
             // Get the current visibility (convert string to boolean)
             const currentVisibility = modelContainer.getAttribute('visible');
             
             // Toggle the visibility
-            const newVisibility = !currentVisibility; // Just toggle the boolean value
+            const newVisibility = !currentVisibility; 
             
             // Set the new visibility (true/false, not string)
             modelContainer.setAttribute('visible', newVisibility);
@@ -456,6 +465,7 @@
         }
 
 
+
         function triggerSpecialAction2() {
             const modelContainer = document.getElementById('modelContainer2');
             
@@ -471,17 +481,27 @@
             // Send a message to other clients to sync the visibility
             socket.emit('toggleModelVisibility2', newVisibility);
 
+
             // Play sound effect if visibility is toggled to true
             if (newVisibility) {
                 // Show the message for 5 seconds
-                document.getElementById('voteMessageUI').style.display = 'block';
+                document.getElementById('voteMessageUI2').style.display = 'block';
                 setTimeout(() => {
-                    document.getElementById('voteMessageUI').style.display = 'none';
+                    document.getElementById('voteMessageUI2').style.display = 'none';
                 }, 5000);
             }
         }
 
 
+        function endRound() {
+            // Send a message to other clients to sync the visibility
+            socket.emit('endRound');
+        }
+
+        function endGame() {
+            // Send a message to other clients to sync the visibility
+            socket.emit('endGame');
+        }
 
         // Client-side (JavaScript)
         socket.on('updateModelVisibility', (newVisibility) => {
@@ -501,6 +521,7 @@
         socket.on('toggleModelVisibility', (newVisibility) => {
             const modelContainer = document.getElementById('modelContainer');
             modelContainer.setAttribute('visible', newVisibility);
+
         });
 
         // Listen for the toggle visibility sync
@@ -520,9 +541,6 @@
             const voteMessageUI = document.getElementById('voteMessageUI');
             voteMessageUI.style.display = 'none'; // Hide the message
         });
-
-
-
 
 
 
@@ -551,8 +569,8 @@
             console.error("Error accessing webcam: " + err);
         });
 
-            
-            
+
+
 
         let players = {};
         const player = document.getElementById('player'); // Get player entity
@@ -598,8 +616,6 @@
 
 
 
-
-
         // Create a sphere for each player
         function createPlayerSphere(id, position) {
             const sphere = document.createElement('a-sphere');
@@ -618,6 +634,8 @@
             document.querySelector('a-scene').appendChild(sphere);
             players[id] = sphere; // Store the sphere for future reference
         }
+
+
 
         // Calculate and display the closest point
         function updateClosestPoint() {
@@ -639,7 +657,6 @@
                     closestPoint = point.id; // Keep track of the closest point
                 }
             });
-
         
             // Send the closest point to the server
             socket.emit('updateSupportPoint', {
@@ -720,8 +737,6 @@
 
         // Start the update loop
         update();
-
-
 
 
 
@@ -897,19 +912,22 @@
 
         // Listen for support point updates from the server
         socket.on('supportPointUpdate', (data) => {
-            const { pointCounts } = data;
+            const { pointCounts, playerId, supportPoint, playerScores } = data;
+
+            console.log(playerScores.point1)
+            console.log(playerScores.point2)
+            console.log(playerScores.point3)
 
             // Update the HTML with the latest counts
             document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCounts.point1}`;
             document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCounts.point2}`;
             document.getElementById('point3Count').textContent = `Player 3 Supporters: ${pointCounts.point3}`;
 
-
             const absval = pointCounts.point1 + pointCounts.point2 + pointCounts.point3
 
-            const val1 = Math.trunc((pointCounts.point1 / absval) * 3)
-            const val2 = Math.trunc((pointCounts.point2 / absval) * 3)
-            const val3 = Math.trunc((pointCounts.point3 / absval) * 3)
+            const val1 = Math.trunc(((pointCounts.point1 / absval) * 2) + playerScores.point1)
+            const val2 = Math.trunc(((pointCounts.point2 / absval) * 2) + playerScores.point2)
+            const val3 = Math.trunc(((pointCounts.point3 / absval) * 2) + playerScores.point3)
 
             // Initial draw with subdivision depth of 3
             drawAndDisplayTriangles(document.querySelector('a-scene'), val3, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora);

@@ -13,6 +13,8 @@ const playerNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace'
 const playerSupportPoints = {}; // Store each player’s support point
 const pointCounts = { point1: 0, point2: 0, point3: 0 }; // Initial counts for each point
 
+const playerScores = { point1: 0, point2: 0, point3: 0 }
+
 
 io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
@@ -57,7 +59,8 @@ io.on('connection', (socket) => {
             const supportData = {
                 pointCounts, // Current count of players at each point
                 playerId, // Player who triggered the update
-                supportPoint // Their new support point
+                supportPoint, // Their new support point
+                playerScores // total rounds score
             };
 
             // Send the data to the specific player who moved
@@ -66,10 +69,49 @@ io.on('connection', (socket) => {
             // Broadcast the update to all other players
             socket.broadcast.emit('supportPointUpdate', supportData);
 
-            console.log(`Updated support counts:`, pointCounts);
         }
     });
 
+
+    // When the visibility is toggled
+    socket.on('endRound', () => {
+        console.log(pointCounts);
+
+        // Find the player with the highest count
+        let highestPlayer = null;
+        let highestCount = -1;
+
+        for (const [point, count] of Object.entries(pointCounts)) {
+            if (count > highestCount) {
+                highestCount = count;
+                highestPlayer = point;
+            }
+        }
+
+        // Increment the score for the player with the highest count
+        if (highestPlayer && playerScores.hasOwnProperty(highestPlayer)) {
+            playerScores[highestPlayer] += 1;
+        }
+
+        console.log(`Updated playerScores:`, playerScores);
+    });
+
+
+
+
+    // Listen for the "endGame" event to reset scores
+    socket.on('endGame', () => {
+        // Reset each player's score to 0
+        for (const key in playerScores) {
+            playerScores[key] = 0;
+        }
+
+        // Log the reset playerScores to confirm
+        console.log('Game ended, playerScores reset:', playerScores);
+
+        // Optionally, broadcast the reset scores to all clients
+        socket.emit('playerScoresReset', playerScores);
+    });
 
     // When the visibility is toggled
     socket.on('toggleModelVisibility', (newVisibility) => {
