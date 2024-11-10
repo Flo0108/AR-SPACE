@@ -384,6 +384,10 @@
     <!-- A-Frame Scene -->
     <a-scene embedded>
 
+        <!-- Timer Text with Contrast Color -->
+        <a-text id="timerText" value="02:00" position="0 2 -4" align="center" color="black" font="mozillavr" scale="30 30 30"></a-text>
+
+
         <!-- Lights -->
         <a-light type="ambient" color="#FFF" intensity="1"></a-light>
         <a-light type="directional" color="#FFF" intensity="1" position="0 2 0" castShadow="true"></a-light>
@@ -542,6 +546,7 @@
             <a-sphere radius="2" color="#0000FF"></a-sphere> <!-- Blue Sphere for Point 1 -->
         </a-entity>
 
+
     </a-scene>
 
 
@@ -617,7 +622,41 @@
         
 
 
+        let countdownValue = 2 * 60; // Countdown starting from 5 minutes (300 seconds)
+        let timerText = document.getElementById('timerText');
+        let countdownInterval;
 
+        // Function to update the countdown timer
+        function updateTimer() {
+            let minutes = Math.floor(countdownValue / 60);
+            let seconds = countdownValue % 60;
+            let timeFormatted = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerText.setAttribute('value', timeFormatted);
+
+            // Play ticking sound during the last 5 seconds
+            if (countdownValue <= 5 && countdownValue > 0) {
+                const tickSound = document.getElementById('tickingSound');
+                tickSound.play(); // Play the ticking sound every second in the last 5 seconds
+            }
+
+            countdownValue--;
+
+            if (countdownValue < 0) {
+                clearInterval(countdownInterval); // Stop the timer
+                timerText.setAttribute('value', 'Time\'s Up!');
+
+                // Trigger end round when time is up
+                endRound();
+            }
+        }
+
+
+
+
+
+
+
+        
 
         // HOST CONTROLLERS
 
@@ -636,6 +675,10 @@
 
             // Send a message to other clients to sync the visibility
             socket.emit('toggleModelVisibility', newVisibility);
+
+            // Automatically start the countdown when the model becomes visible
+            countdownValue = 0.5 * 60; // Reset to 5 minutes
+            countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
 
             // Play sound effect if visibility is toggled to true
             if (newVisibility) {
@@ -680,6 +723,7 @@
                 document.getElementById('voteMessageUI2').style.display = 'flex';
                 setTimeout(() => {
                     document.getElementById('voteMessageUI2').style.display = 'none';
+                    socket.emit('hideVoteMessage2', newVisibility);
                 }, 5000);
             }
         }
@@ -690,6 +734,9 @@
 
             const voteMessageUI = document.getElementById('roundEndMessage');
             voteMessageUI.style.display = 'flex'; // Show the message
+
+            const roundEndSound = document.getElementById('roundEndSound');
+            roundEndSound.play();
 
             setTimeout(() => {
                 document.getElementById('roundEndMessage').style.display = 'none'; // Hide the message after 5 seconds
@@ -707,6 +754,8 @@
         
 
         // Client-side (JavaScript)
+
+        // Listen for the event to trigger visibility change and start the countdown
         socket.on('updateModelVisibility', (newVisibility) => {
             const modelContainer = document.getElementById('modelContainer');
             modelContainer.setAttribute('visible', newVisibility);
@@ -738,6 +787,10 @@
         socket.on('showVoteMessage', () => {
             const voteMessageUI = document.getElementById('voteMessageUI');
             voteMessageUI.style.display = 'flex'; // Show the message
+
+            // Automatically start the countdown when the model becomes visible
+            countdownValue = 0.5 * 60; // Reset to 5 minutes
+            countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
         });
 
         // Listen for hiding the vote message UI
@@ -760,50 +813,6 @@
         });
 
 
-
-        socket.on('roundEnded', () => {
-
-            const tickSound = document.getElementById('tickingSound');
-            tickSound.play();
-
-            const coundown = document.getElementById('countdown3');
-            coundown.style.display = 'flex'; // Hide the message
-
-            setTimeout(() => {
-                document.getElementById('countdown3').style.display = 'none';
-
-                const tickSound = document.getElementById('tickingSound');
-                tickSound.play();
-
-                const coundown = document.getElementById('countdown2');
-                coundown.style.display = 'flex'; // Hide the message
-
-                setTimeout(() => {
-                    document.getElementById('countdown2').style.display = 'none';
-
-                    const tickSound = document.getElementById('tickingSound');
-                    tickSound.play();
-
-                    const coundown = document.getElementById('countdown1');
-                    coundown.style.display = 'flex'; // Hide the message
-
-                    setTimeout(() => {
-                        document.getElementById('countdown1').style.display = 'none';
-
-
-                        const roundEndSound = document.getElementById('roundEndSound');
-                        roundEndSound.play();
-
-                        const voteMessageUI = document.getElementById('roundEndMessage');
-                        voteMessageUI.style.display = 'flex'; // Hide the message
-                        
-                        setTimeout(() => {
-                                document.getElementById('roundEndMessage').style.display = 'none';
-                            }, 5000);
-                        }, 2000);
-                    }, 2000);
-                }, 2000);
-        });
 
 
 
