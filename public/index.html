@@ -196,8 +196,10 @@
 
 </head>
 <body>
+    
+    <!-- Audio Element (hidden by default) -->
+    <audio id="roundEndSound" src="/soundeffects/new_round.mp3" preload="auto"></audio>
 
-    <audio id="roundEndSound" src="public/soundeffects/soundfile.mp3" preload="auto"></audio>
 
     <!-- Full-screen overlay for name input -->
     <div id="overlay">
@@ -294,9 +296,6 @@
             <div id="gameStartedText">ROUND ENDED</div>
         </div>
     </div>
-
-    <!-- Audio Element (hidden by default) -->
-    <audio id="notificationSound" src="soundeffects/new_round.mp3" preload="auto"></audio>
 
 
     <!-- A-Frame Scene -->
@@ -664,9 +663,13 @@
         });
 
         socket.on('roundEnded', () => {
+
+            const roundEndSound = document.getElementById('roundEndSound');
+            roundEndSound.play();
+
             const voteMessageUI = document.getElementById('roundEndMessage');
             voteMessageUI.style.display = 'flex'; // Hide the message
-
+            
             setTimeout(() => {
                     document.getElementById('roundEndMessage').style.display = 'none';
                 }, 5000);
