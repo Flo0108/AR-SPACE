@@ -1201,9 +1201,7 @@
         socket.on('supportPointUpdate', (data) => {
             const { pointCounts, playerId, supportPoint, playerScores } = data;
 
-            console.log(playerScores.point1)
-            console.log(playerScores.point2)
-            console.log(playerScores.point3)
+            console.log(playerScores)
 
             // Update the HTML with the latest counts
             document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCounts.point1}`;
