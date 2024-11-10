@@ -197,6 +197,8 @@
 </head>
 <body>
 
+    <audio id="roundEndSound" src="public/soundeffects/soundfile.mp3" preload="auto"></audio>
+
     <!-- Full-screen overlay for name input -->
     <div id="overlay">
         <h2>Enter Your Name</h2>
@@ -213,17 +215,85 @@
     </div>
 
     <!-- Text for displaying the messages -->
-    <div id="voteMessageUI" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; display: none; text-align: center;z-index: 9999">
-        <div id="gameStartedText">ROUND 1</div>
-        <div id="voteText">Players may now vote for effects</div>
+    <div id="voteMessageUI" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none; /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+        z-index: 9999;
+        background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    ">
+        <div style="
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center text vertically within each box */
+        ">
+            <div id="gameStartedText">ROUND 1</div>
+            <div id="voteText">Players may now vote for special effects</div>
+        </div>
     </div>
 
-    <!-- Text for displaying the messages -->
-    <div id="voteMessageUI2" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 30px; display: none; text-align: center;z-index: 9999">
-        <div id="gameStartedText">ROUND 2</div>
-        <div id="voteText">Players may now vote for Facial Filters</div>
+    <div id="voteMessageUI2" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none; /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+        z-index: 9999;
+        background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    ">
+        <div style="
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center text vertically within each box */
+        ">
+            <div id="gameStartedText">ROUND 2</div>
+            <div id="voteText">Players may now vote for Facial Filters</div>
+        </div>
     </div>
 
+    <div id="roundEndMessage" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none; /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+        z-index: 9999;
+        background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+    ">
+        <div style="
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center text vertically within each box */
+        ">
+            <div id="gameStartedText">ROUND ENDED</div>
+        </div>
+    </div>
 
     <!-- Audio Element (hidden by default) -->
     <audio id="notificationSound" src="public/soundeffects/new_round.mp3" preload="auto"></audio>
@@ -365,12 +435,14 @@
         <!-- Player Entity -->
         <a-entity id="player" position="0 1 0">
             <!-- Player sphere at height 1 -->
-            <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere> <!-- Optional player sphere -->
-            <!-- Camera with raycaster at height 40 -->
-            <a-camera position="0 15 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
-            <!-- Text to display the player name above the avatar -->
-            <a-text id="playerNameText" value="" position="0 2 -1" align="center" color="white"></a-text>
-            </a-entity>
+            <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere>
+            
+            <!-- Camera with raycaster -->
+            <a-camera id="playerCamera" position="0 15 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
+                <!-- Text to display the player name above the avatar -->
+                <a-text id="playerNameText" value="" position="0 2 -1" align="center" color="white"></a-text>
+            </a-camera>
+        </a-entity>
 
         <!-- Points in the scene (with visual spheres) -->
         <a-entity id="point1" position="-20 2 12.5">
@@ -411,6 +483,34 @@
 
     <script>
 
+        // SET CAMERA HEIGHT BASED ON DEVICE
+        // Get the camera entity 
+        const playerCamera = document.querySelector("#playerCamera");
+
+        // Function to set camera height based on VR status
+        function setCameraHeight(isVR) {
+            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 15, z: 0 });
+        }
+
+        // Listen for entering and exiting VR mode
+        const sceneEl = document.querySelector("a-scene");
+
+        sceneEl.addEventListener("enter-vr", () => {
+            setCameraHeight(true); // Set height for VR
+        });
+
+        sceneEl.addEventListener("exit-vr", () => {
+            setCameraHeight(false); // Set height for non-VR
+        });
+
+        // Initial height setting for non-VR (e.g., upon loading)
+        setCameraHeight(false);
+
+
+
+
+
+
         const socket = io(window.location.origin);
 
         // Function to handle name submission
@@ -431,6 +531,12 @@
         }
         
         
+
+
+
+
+        // HOST CONTROLLERS
+
         function triggerSpecialAction() {
 
             const modelContainer = document.getElementById('modelContainer');
@@ -451,7 +557,7 @@
             if (newVisibility) {
 
                 // Show the message for 5 seconds
-                document.getElementById('voteMessageUI').style.display = 'block';
+                document.getElementById('voteMessageUI').style.display = 'flex';
 
                 // Send a message to other clients to sync the visibility
                 socket.emit('showVoteMessage', newVisibility);
@@ -463,8 +569,6 @@
                 }, 5000);
             }
         }
-
-
 
         function triggerSpecialAction2() {
             const modelContainer = document.getElementById('modelContainer2');
@@ -485,23 +589,38 @@
             // Play sound effect if visibility is toggled to true
             if (newVisibility) {
                 // Show the message for 5 seconds
-                document.getElementById('voteMessageUI2').style.display = 'block';
+                document.getElementById('voteMessageUI2').style.display = 'flex';
                 setTimeout(() => {
                     document.getElementById('voteMessageUI2').style.display = 'none';
                 }, 5000);
             }
         }
 
-
         function endRound() {
             // Send a message to other clients to sync the visibility
             socket.emit('endRound');
+            
+            // Play the round end sound
+            const roundEndSound = document.getElementById('roundEndSound');
+            roundEndSound.play();
+
+            const voteMessageUI = document.getElementById('roundEndMessage');
+            voteMessageUI.style.display = 'flex'; // Show the message
+
+            setTimeout(() => {
+                document.getElementById('roundEndMessage').style.display = 'none'; // Hide the message after 5 seconds
+            }, 5000);
         }
 
         function endGame() {
             // Send a message to other clients to sync the visibility
             socket.emit('endGame');
         }
+
+
+
+
+        
 
         // Client-side (JavaScript)
         socket.on('updateModelVisibility', (newVisibility) => {
@@ -521,7 +640,6 @@
         socket.on('toggleModelVisibility', (newVisibility) => {
             const modelContainer = document.getElementById('modelContainer');
             modelContainer.setAttribute('visible', newVisibility);
-
         });
 
         // Listen for the toggle visibility sync
@@ -530,16 +648,27 @@
             modelContainer.setAttribute('visible', newVisibility);
         });
 
+
+
         // Listen for showing the vote message UI
         socket.on('showVoteMessage', () => {
             const voteMessageUI = document.getElementById('voteMessageUI');
-            voteMessageUI.style.display = 'block'; // Show the message
+            voteMessageUI.style.display = 'flex'; // Show the message
         });
 
         // Listen for hiding the vote message UI
         socket.on('hideVoteMessage', () => {
             const voteMessageUI = document.getElementById('voteMessageUI');
             voteMessageUI.style.display = 'none'; // Hide the message
+        });
+
+        socket.on('roundEnded', () => {
+            const voteMessageUI = document.getElementById('roundEndMessage');
+            voteMessageUI.style.display = 'flex'; // Hide the message
+
+            setTimeout(() => {
+                    document.getElementById('roundEndMessage').style.display = 'none';
+                }, 5000);
         });
 
 
@@ -568,6 +697,10 @@
         .catch(function(err) {
             console.error("Error accessing webcam: " + err);
         });
+
+
+
+
 
 
 

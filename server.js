@@ -93,6 +93,9 @@ io.on('connection', (socket) => {
             playerScores[highestPlayer] += 1;
         }
 
+        // Broadcast to all clients to sync the visibility
+        socket.broadcast.emit('roundEnded');
+
         console.log(`Updated playerScores:`, playerScores);
     });
 
