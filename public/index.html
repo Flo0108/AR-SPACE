@@ -385,7 +385,7 @@
     <a-scene embedded>
 
         <!-- Timer Text with Contrast Color -->
-        <a-text id="timerText" value="02:00" position="0 2 -4" align="center" color="black" font="mozillavr" scale="30 30 30"></a-text>
+        <a-text id="timerText" value="02:00" position="0 2 -4" align="center" color="black" font="mozillavr" scale="30 30 30" look-at="#player"></a-text>></a-text>
 
 
         <!-- Lights -->
@@ -712,6 +712,10 @@
             // Send a message to other clients to sync the visibility
             socket.emit('toggleModelVisibility2', newVisibility);
 
+            // Automatically start the countdown when the model becomes visible
+            countdownValue = 2 * 60; // Reset to 5 minutes
+            countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
+
 
             // Play sound effect if visibility is toggled to true
             if (newVisibility) {
@@ -804,6 +808,10 @@
         socket.on('showVoteMessage2', () => {
             const voteMessageUI = document.getElementById('voteMessageUI2');
             voteMessageUI.style.display = 'flex'; // Show the message
+
+            // Automatically start the countdown when the model becomes visible
+            countdownValue = 2 * 60; // Reset to 5 minutes
+            countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
         });
 
         // Listen for hiding the vote message UI
