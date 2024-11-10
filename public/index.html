@@ -196,10 +196,10 @@
 
 </head>
 <body>
-    
+
     <!-- Audio Element (hidden by default) -->
     <audio id="roundEndSound" src="/soundeffects/new_round.mp3" preload="auto"></audio>
-
+    <audio id="tickingSound" src="/soundeffects/tick_sound.mp3" preload="auto"></audio>
 
     <!-- Full-screen overlay for name input -->
     <div id="overlay">
@@ -283,7 +283,7 @@
         color: white;
         font-size: 30px;
         text-align: center;
-        z-index: 9999;
+        z-index: 29;
         background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
     ">
         <div style="
@@ -296,6 +296,89 @@
             <div id="gameStartedText">ROUND ENDED</div>
         </div>
     </div>
+
+
+
+    <!-- COUNTDOWN CONTROLLERS -->
+    <div id="countdown3" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none; /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+        z-index: 29;
+        background-color: rgba(255, 255, 255, 0); /* Semi-transparent black background */
+    ">
+        <div style="
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center text vertically within each box */
+        ">
+            <div id="countdown">3 ...</div>
+        </div>
+    </div>
+
+    <div id="countdown2" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none; /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+        z-index: 29;
+        background-color: rgba(255, 255, 255, 0); /* Semi-transparent black background */
+    ">
+        <div style="
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center text vertically within each box */
+        ">
+            <div id="countdown">2 ...</div>
+        </div>
+    </div>
+
+
+    <div id="countdown1" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        display: none; /* Initially hidden */
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 30px;
+        text-align: center;
+        z-index: 9999;
+        background-color: rgba(255, 255, 255, 0); /* Semi-transparent black background */
+    ">
+        <div style="
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center text vertically within each box */
+        ">
+            <div id="countdown">1 ...</div>
+        </div>
+    </div>
+
 
 
     <!-- A-Frame Scene -->
@@ -410,6 +493,7 @@
             <a-box id="05" class="interactive-box" position=" 20 5 -35" color="purple" scale="7 7 7"></a-box>
         
         </a-entity>
+
 
         <!-- Model visibility wrapper - initially hidden -->
         <a-entity id="modelContainer2" visible="false">
@@ -588,6 +672,10 @@
 
             // Play sound effect if visibility is toggled to true
             if (newVisibility) {
+
+                // Send a message to other clients to sync the visibility
+                socket.emit('showVoteMessage2', newVisibility);
+
                 // Show the message for 5 seconds
                 document.getElementById('voteMessageUI2').style.display = 'flex';
                 setTimeout(() => {
@@ -599,10 +687,6 @@
         function endRound() {
             // Send a message to other clients to sync the visibility
             socket.emit('endRound');
-            
-            // Play the round end sound
-            const roundEndSound = document.getElementById('roundEndSound');
-            roundEndSound.play();
 
             const voteMessageUI = document.getElementById('roundEndMessage');
             voteMessageUI.style.display = 'flex'; // Show the message
@@ -662,17 +746,63 @@
             voteMessageUI.style.display = 'none'; // Hide the message
         });
 
+
+        // Listen for showing the vote message UI
+        socket.on('showVoteMessage2', () => {
+            const voteMessageUI = document.getElementById('voteMessageUI2');
+            voteMessageUI.style.display = 'flex'; // Show the message
+        });
+
+        // Listen for hiding the vote message UI
+        socket.on('hideVoteMessage2', () => {
+            const voteMessageUI = document.getElementById('voteMessageUI2');
+            voteMessageUI.style.display = 'none'; // Hide the message
+        });
+
+
+
         socket.on('roundEnded', () => {
 
-            const roundEndSound = document.getElementById('roundEndSound');
-            roundEndSound.play();
+            const tickSound = document.getElementById('tickingSound');
+            tickSound.play();
 
-            const voteMessageUI = document.getElementById('roundEndMessage');
-            voteMessageUI.style.display = 'flex'; // Hide the message
-            
+            const coundown = document.getElementById('countdown3');
+            coundown.style.display = 'flex'; // Hide the message
+
             setTimeout(() => {
-                    document.getElementById('roundEndMessage').style.display = 'none';
-                }, 5000);
+                document.getElementById('countdown3').style.display = 'none';
+
+                const tickSound = document.getElementById('tickingSound');
+                tickSound.play();
+
+                const coundown = document.getElementById('countdown2');
+                coundown.style.display = 'flex'; // Hide the message
+
+                setTimeout(() => {
+                    document.getElementById('countdown2').style.display = 'none';
+
+                    const tickSound = document.getElementById('tickingSound');
+                    tickSound.play();
+
+                    const coundown = document.getElementById('countdown1');
+                    coundown.style.display = 'flex'; // Hide the message
+
+                    setTimeout(() => {
+                        document.getElementById('countdown1').style.display = 'none';
+
+
+                        const roundEndSound = document.getElementById('roundEndSound');
+                        roundEndSound.play();
+
+                        const voteMessageUI = document.getElementById('roundEndMessage');
+                        voteMessageUI.style.display = 'flex'; // Hide the message
+                        
+                        setTimeout(() => {
+                                document.getElementById('roundEndMessage').style.display = 'none';
+                            }, 5000);
+                        }, 2000);
+                    }, 2000);
+                }, 2000);
         });
 
 

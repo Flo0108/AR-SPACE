@@ -138,6 +138,16 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('hideVoteMessage');
     });
 
+    // When the message should be shown
+    socket.on('showVoteMessage2', () => {
+        socket.broadcast.emit('showVoteMessage2');
+    });
+
+    // When the message should be hidden
+    socket.on('hideVoteMessage2', () => {
+        socket.broadcast.emit('hideVoteMessage2');
+    });
+
 
     // Handle player disconnection
     socket.on('disconnect', () => {
