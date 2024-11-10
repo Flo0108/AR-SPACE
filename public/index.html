@@ -795,6 +795,9 @@
             // Automatically start the countdown when the model becomes visible
             countdownValue = 0.5 * 60; // Reset to 5 minutes
             countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
+
+            const roundEndSound = document.getElementById('roundEndSound');
+            roundEndSound.play();
         });
 
         // Listen for hiding the vote message UI
