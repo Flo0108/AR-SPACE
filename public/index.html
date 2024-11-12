@@ -528,7 +528,7 @@
             <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere>
             
             <!-- Camera with raycaster -->
-            <a-camera id="playerCamera" position="0 15 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
+            <a-camera id="playerCamera" position="0 2 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
                 <!-- Text to display the player name above the avatar -->
                 <a-text id="playerNameText" value="" position="0 2 -1" align="center" color="white"></a-text>
             </a-camera>
@@ -580,7 +580,7 @@
 
         // Function to set camera height based on VR status
         function setCameraHeight(isVR) {
-            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 15, z: 0 });
+            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 30, z: 0 });
         }
 
         // Listen for entering and exiting VR mode
