@@ -210,7 +210,8 @@
 
     <!-- Admin controls only for "camera_master" -->
     <div id="adminControls">
-        <button class="admin-button" onclick="triggerSpecialAction()">Level 1</button>
+        <button class="admin-button" onclick="triggerSpecialAction0()">Level 0</button>
+        <button class="admin-button" onclick="triggerSpecialAction1()">Level 1</button>
         <button class="admin-button" onclick="triggerSpecialAction2()">Level 2</button>
         <button class="admin-button" onclick="endRound()">End Round</button>
         <button class="admin-button" onclick="endGame()">New Game</button>
@@ -388,6 +389,8 @@
         <a-text id="timerText" value="02:00" position="0 2 -4" align="center" color="black" font="mozillavr" scale="30 30 30" look-at="#player"></a-text>></a-text>
 
 
+        <a-sky color="#FFCC75"></a-sky>
+
         <!-- Lights -->
         <a-light type="ambient" color="#FFF" intensity="1"></a-light>
         <a-light type="directional" color="#FFF" intensity="1" position="0 2 0" castShadow="true"></a-light>
@@ -551,12 +554,11 @@
 
 
     <iframe 
-        src="https://player.twitch.tv/?channel=flo0oo0oo&parent=ar-space.onrender.com" 
+        src="https://player.twitch.tv/?channel=emmaschwarz3888&parent=ar-space.onrender.com" 
         allowfullscreen="false">
     </iframe>
 
 
-    <video id="webcam" autoplay playsinline></video>
 
 
 
@@ -660,7 +662,14 @@
 
         // HOST CONTROLLERS
 
-        function triggerSpecialAction() {
+        function triggerSpecialAction0() {
+            // Send a message to other clients to sync the visibility
+            socket.emit('activateRound0');
+        }
+
+
+
+        function triggerSpecialAction1() {
 
             const modelContainer = document.getElementById('modelContainer');
             
@@ -822,36 +831,6 @@
             const voteMessageUI = document.getElementById('voteMessageUI2');
             voteMessageUI.style.display = 'none'; // Hide the message
         });
-
-
-
-
-
-        AFRAME.registerComponent('rotate', {
-                schema: {
-                    speed: {type: 'number', default: 1} // Rotation speed
-                },
-                tick: function () {
-                    const el = this.el; // Reference to the entity
-                    const data = this.data; // Component data
-                    el.object3D.rotation.y += data.speed * 0.01; // Adjust speed as needed
-                }
-            });
-
-        // Access the user's webcam
-        const video = document.querySelector('#webcam');
-
-        navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'environment' } // 'user' for front camera, 'environment' for rear camera
-        })
-        .then(function(stream) {
-            video.srcObject = stream;
-            video.play();
-        })
-        .catch(function(err) {
-            console.error("Error accessing webcam: " + err);
-        });
-
 
 
 
@@ -1150,7 +1129,7 @@
             // Display triangles in A-Frame
             triangles.forEach(triangle => {
                 const newTriangle = createATriangle(scene, ...triangle);
-                newTriangle.setAttribute('material', `color: hsl(${triangleColor + Math.random() * 40}, 50%, 50%); side: double`);
+                newTriangle.setAttribute('material', `color: hsl(${triangleColor + Math.random() * 20}, 50%, 50%); side: double`);
                 triangleGroup.push(newTriangle);
             });
         }
@@ -1161,7 +1140,6 @@
 
         xpos = -(width / 2)
         ypos = - height * 1.3
-
 
         const varxa = xpos
         const varya = ypos
@@ -1186,6 +1164,40 @@
         const x2c = 0 + varxc, y2c = height - 0 + varyc;
         const x3c = width - 0 + varxc, y3c = height - 0 + varyc;
 
+
+        // Level 0 Triangles
+        // Position 1a
+        const x1aa = width / 2 + varxa,    y1aa = varya;
+        const x2aa = varxa,                y2aa = varya + height;
+        const x3aa = varxa - width / 2,    y3aa = varya;
+
+        // Position 1b
+        const x1ab = varxa + width / 2,    y1ab = varya;
+        const x2ab = varxa + width * 1.5,  y2ab = varya;           // this
+        const x3ab = varxa + width,        y3ab = varya + height; //not this
+
+        // Position 2a
+        const x1ba = varxb + width / 2,    y1ba = varyb + height * 2; // this
+        const x2ba = varxb,                y2ba = varyb + height; 
+        const x3ba = varxb + width,        y3ba = varyb + height;
+
+        // Position 1b
+        const x1bb = varxb + width / 2,    y1bb = varyb;
+        const x2bb = varxb + width * 1.41, y2bb = varyb; // this
+        const x3bb = varxb + width,        y3bb = varyb + height; 
+
+
+        // Position 3a
+        const x1ca = varxc + width / 2,    y1ca = varyc + height * 2; // this
+        const x2ca = varxc,                y2ca = varyc + height; 
+        const x3ca = varxc + width,        y3ca = varyc + height;
+
+        // Position 3b
+        const x1cb = varxc + width / 2,    y1cb = varyc;
+        const x2cb = varxc,                y2cb = varyc + height; // this
+        const x3cb = varxc - width * (1/1.41) , y3cb = varyc; 
+
+
         const colora = 120
         const colorb = 700
         const colorc = 1400
@@ -1194,7 +1206,12 @@
         const triangleGroup1 = [];
         const triangleGroup2 = [];
         const triangleGroup3 = [];
-
+        const triangleGroup4 = [];
+        const triangleGroup5 = [];
+        const triangleGroup6 = [];
+        const triangleGroup7 = [];
+        const triangleGroup8 = [];
+        const triangleGroup9 = [];
 
 
         // Listen for support point updates from the server
