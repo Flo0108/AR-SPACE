@@ -437,6 +437,7 @@
         </a-entity>
 
 
+
         <!-- Model visibility wrapper - initially hidden -->
         <a-entity id="modelContainer" visible="false">
 
@@ -562,11 +563,21 @@
         </a-entity>
 
 
+
+        <!-- GLTF Model 1 -->
+        <a-entity id="player-model" visible="false"
+                    gltf-model="models/Character.glb"
+                    position="0 0 0"
+                    scale="4 4 4"
+                    material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
+                    shadow="receive: true; cast: true">
+        </a-entity>
+
         <!-- Player Entity -->
         <a-entity id="player" position="0 1 0">
             <!-- Player sphere at height 1 -->
             <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere>
-            
+
             <!-- Camera with raycaster -->
             <a-camera id="playerCamera" position="0 2 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
                 <!-- Text to display the player name above the avatar -->
@@ -755,6 +766,7 @@
             // Automatically start the countdown when the model becomes visible
             countdownValue = 0.5 * 60; // Reset to 5 minutes
             countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
+            timerText.setAttribute('position', 0,0,0);
 
             // Play sound effect if visibility is toggled to true
             if (newVisibility) {
@@ -1360,8 +1372,6 @@
             players[id] = sphere; // Store the sphere for future reference
         }
 
-
-
         // Calculate and display the closest point
         function updateClosestPoint() {
             const playerPos = player.getAttribute('position');
@@ -1891,7 +1901,6 @@
 
 
 
-
         // Level 0 Triangles
         // Position 1a
         const x1aa = width / 2 + varxa,    y1aa = varya;
@@ -1941,22 +1950,15 @@
         const triangleGroup11 = [];
         const triangleGroup12 = [];
 
-        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2a, y2a, x2b, y2b, triangleGroup0, colora, 50, 100);
-
-        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup10, colora, 50, 60);
-        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup11, colorb, 50, 60);
-        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1c, y1c, x2c, y2c, x3c, y3c, triangleGroup12, colorc, 50, 60);
+        drawAndDisplayTriangles(document.querySelector('a-scene'), 3, x1b, y1b, x2a, y2a, x2b, y2b, triangleGroup0, colora, 50, 100);
 
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora, 50, 60);
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup2, colorb, 50, 60);
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1c, y1c, x2c, y2c, x3c, y3c, triangleGroup3, colorc, 50, 60);
 
-
         // Start the interval and store the ID
         const closestPointInterval = setInterval(updateClosestPoint, 2000);
 
-
-        
         console.log('DOM fully loaded and parsed');
     </script>
 </body>
