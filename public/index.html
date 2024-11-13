@@ -624,7 +624,7 @@
 
         // Function to set camera height based on VR status
         function setCameraHeight(isVR) {
-            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 30, z: 0 });
+            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 5, z: 0 });
         }
 
         // Listen for entering and exiting VR mode
@@ -1937,8 +1937,15 @@
         const triangleGroup7 = [];
         const triangleGroup8 = [];
         const triangleGroup9 = [];
+        const triangleGroup10 = [];
+        const triangleGroup11 = [];
+        const triangleGroup12 = [];
 
-        drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1b, y1b, x2a, y2a, x2b, y2b, triangleGroup0, colora, 50, 100);
+        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2a, y2a, x2b, y2b, triangleGroup0, colora, 50, 100);
+
+        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup10, colora, 50, 60);
+        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup11, colorb, 50, 60);
+        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1c, y1c, x2c, y2c, x3c, y3c, triangleGroup12, colorc, 50, 60);
 
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora, 50, 60);
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup2, colorb, 50, 60);
