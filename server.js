@@ -16,6 +16,7 @@ const pointCounts = { point1: 0, point2: 0, point3: 0 }; // Initial counts for e
 const playerScores = { point1: 0, point2: 0, point3: 0 }
 
 
+
 io.on('connection', (socket) => {
     console.log('New player connected:', socket.id);
 
@@ -73,6 +74,122 @@ io.on('connection', (socket) => {
     });
 
 
+
+    // Handle updates from players about their support point
+    socket.on('updateSupportPoint1', (data) => {
+        const { playerId, supportPoint } = data;
+        const previousPoint = playerSupportPoints[playerId];
+
+        
+
+        if (previousPoint !== supportPoint) {
+            // Decrement the count for the previous point
+            if (previousPoint) {
+                pointCountsRound0[previousPoint] = Math.max(pointCountsRound0[previousPoint] - 1, 0);
+            }
+
+            // Increment the count for the new support point
+            pointCountsRound0[supportPoint] = (pointCountsRound0[supportPoint] || 0) + 1;
+
+            // Update the player's current support point
+            playerSupportPoints[playerId] = supportPoint;
+
+            // Prepare the data to send back to the players
+            const supportData = {
+                pointCountsRound0, // Current count of players at each point
+                playerId, // Player who triggered the update
+                supportPoint, // Their new support point
+                playerScores // total rounds score
+            };
+
+            console.log(pointCountsRound0)
+
+            // Send the data to the specific player who moved
+            socket.emit('supportPoint1Update', supportData);
+
+            // Broadcast the update to all other players
+            socket.broadcast.emit('supportPoint1Update', supportData);
+
+        }
+    });
+
+    // Handle updates from players about their support point
+    socket.on('updateSupportPoint2', (data) => {
+        const { playerId, supportPoint } = data;
+        const previousPoint = playerSupportPoints[playerId];
+
+        
+
+        if (previousPoint !== supportPoint) {
+            // Decrement the count for the previous point
+            if (previousPoint) {
+                pointCountsRound0[previousPoint] = Math.max(pointCountsRound0[previousPoint] - 1, 0);
+            }
+
+            // Increment the count for the new support point
+            pointCountsRound0[supportPoint] = (pointCountsRound0[supportPoint] || 0) + 1;
+
+            // Update the player's current support point
+            playerSupportPoints[playerId] = supportPoint;
+
+            // Prepare the data to send back to the players
+            const supportData = {
+                pointCountsRound0, // Current count of players at each point
+                playerId, // Player who triggered the update
+                supportPoint, // Their new support point
+                playerScores // total rounds score
+            };
+
+            console.log(pointCountsRound0)
+
+            // Send the data to the specific player who moved
+            socket.emit('supportPoint2Update', supportData);
+
+            // Broadcast the update to all other players
+            socket.broadcast.emit('supportPoint2Update', supportData);
+
+        }
+    });
+
+    // Handle updates from players about their support point
+    socket.on('updateSupportPoint3', (data) => {
+        const { playerId, supportPoint } = data;
+        const previousPoint = playerSupportPoints[playerId];
+
+        
+
+        if (previousPoint !== supportPoint) {
+            // Decrement the count for the previous point
+            if (previousPoint) {
+                pointCountsRound0[previousPoint] = Math.max(pointCountsRound0[previousPoint] - 1, 0);
+            }
+
+            // Increment the count for the new support point
+            pointCountsRound0[supportPoint] = (pointCountsRound0[supportPoint] || 0) + 1;
+
+            // Update the player's current support point
+            playerSupportPoints[playerId] = supportPoint;
+
+            // Prepare the data to send back to the players
+            const supportData = {
+                pointCountsRound0, // Current count of players at each point
+                playerId, // Player who triggered the update
+                supportPoint, // Their new support point
+                playerScores // total rounds score
+            };
+
+            console.log(pointCountsRound0)
+
+            // Send the data to the specific player who moved
+            socket.emit('supportPoint3Update', supportData);
+
+            // Broadcast the update to all other players
+            socket.broadcast.emit('supportPoint3Update', supportData);
+
+        }
+    });
+
+
     // When the visibility is toggled
     socket.on('endRound', () => {
         console.log(pointCounts);
@@ -100,6 +217,26 @@ io.on('connection', (socket) => {
     });
 
 
+    // Listen for the "endGame" event to reset scores
+    socket.on('activateRound0_0', () => {
+        pointCountsRound0 = { point5: 0, point6: 0}
+        socket.emit('round0_0Activated');
+        socket.broadcast.emit('round0_0Activated');
+    });
+
+    // Listen for the "endGame" event to reset scores
+    socket.on('activateRound0_1', () => {
+        pointCountsRound0 = { point5: 0, point6: 0}
+        socket.emit('round0_1Activated');
+        socket.broadcast.emit('round0_1Activated');
+    });
+
+    // Listen for the "endGame" event to reset scores
+    socket.on('activateRound0_2', () => {
+        pointCountsRound0 = { point5: 0, point6: 0}
+        socket.emit('round0_2Activated');
+        socket.broadcast.emit('round0_2Activated');
+    });
 
 
     // Listen for the "endGame" event to reset scores
@@ -107,6 +244,10 @@ io.on('connection', (socket) => {
         // Reset each player's score to 0
         for (const key in playerScores) {
             playerScores[key] = 0;
+        }
+
+        for (const key in pointCounts) {
+            pointCounts[key] = 0;
         }
 
         // Log the reset playerScores to confirm
