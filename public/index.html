@@ -635,7 +635,7 @@
 
         // Function to set camera height based on VR status
         function setCameraHeight(isVR) {
-            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 5, z: 0 });
+            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 30, z: 0 });
         }
 
         // Listen for entering and exiting VR mode
@@ -897,8 +897,8 @@
                     roundEndMessage1.style.display = 'none';
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position', {x: -20, y: 20, z: -40})
-                    speakerText.setAttribute('position', {x: -20, y: 25, z: -40})
+                    timerText.setAttribute('position', {x: -20, y: 10, z: -40})
+                    speakerText.setAttribute('position', {x: -20, y: 15, z: -40})
 
                     drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1aa, y1aa, x2aa, y2aa, x3aa, y3aa, triangleGroup4, colora, 50, 60);
                     
@@ -929,8 +929,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position', {x: 20, y: 20, z: -40})
-                    speakerText.setAttribute('position', {x: 20, y: 25, z: -40})
+                    timerText.setAttribute('position', {x: 20, y: 10, z: -40})
+                    speakerText.setAttribute('position', {x: 20, y: 15, z: -40})
                     
                 }, 5000);
                 
@@ -952,8 +952,8 @@
 
                 // Hide the message after 5 seconds of being shown
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -20, y: 25, z: -40})
-                    player2Text.setAttribute('position', { x: 20, y: 25, z: -40})
+                    player1Text.setAttribute('position', { x: -20, y: 15, z: -40})
+                    player2Text.setAttribute('position', { x: 20, y: 15, z: -40})
                     
                     roundEndMessage1.style.display = 'none';
                 }, 5000);
@@ -963,8 +963,8 @@
                 }, 10000); 
 
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -2000, y: 25, z: -40})
-                    player2Text.setAttribute('position', { x: 2000, y: 25, z: -40})
+                    player1Text.setAttribute('position', { x: -2000, y: 15, z: -40})
+                    player2Text.setAttribute('position', { x: 2000, y: 15, z: -40})
                 }, 15000)
 
             }, 30000); // 10 seconds in milliseconds
@@ -1032,8 +1032,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   { x: 40, y: 20, z: 0})
-                    speakerText.setAttribute('position', { x: 40, y: 25, z: 0})
+                    timerText.setAttribute('position',   { x: 40, y: 10, z: 0})
+                    speakerText.setAttribute('position', { x: 40, y: 15, z: 0})
 
 
                     
@@ -1060,8 +1060,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   {x: 20, y: 20, z: 40})
-                    speakerText.setAttribute('position', {x: 20, y: 25, z: 40})
+                    timerText.setAttribute('position',   {x: 20, y: 10, z: 40})
+                    speakerText.setAttribute('position', {x: 20, y: 15, z: 40})
                     
                 }, 5000);
                 
@@ -1083,8 +1083,8 @@
 
                 // Hide the message after 5 seconds of being shown
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: 40, y: 25, z: 0})
-                    player2Text.setAttribute('position', { x: 20, y: 25, z: 40})
+                    player1Text.setAttribute('position', { x: 40, y: 15, z: 0})
+                    player2Text.setAttribute('position', { x: 20, y: 15, z: 40})
                     
                     roundEndMessage1.style.display = 'none';
                 }, 5000);
@@ -1094,8 +1094,8 @@
                 }, 10000); 
 
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -2000, y: 25, z: -40})
-                    player2Text.setAttribute('position', { x: 2000, y: 25, z: -40})
+                    player1Text.setAttribute('position', { x: -2000, y: 15, z: -40})
+                    player2Text.setAttribute('position', { x: 2000, y: 15, z: -40})
                 }, 15000)
 
             }, 30000); // 10 seconds in milliseconds
@@ -1161,8 +1161,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   { x: -20, y: 20, z: 40})
-                    speakerText.setAttribute('position', { x: -20, y: 25, z: 40})
+                    timerText.setAttribute('position',   { x: -20, y: 10, z: 40})
+                    speakerText.setAttribute('position', { x: -20, y: 15, z: 40})
                     
                 }, 5000);
             }, 5000);
@@ -1187,8 +1187,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   { x: -45, y: 20, z: 0})
-                    speakerText.setAttribute('position', { x: -45, y: 25, z: 0})
+                    timerText.setAttribute('position',   { x: -45, y: 10, z: 0})
+                    speakerText.setAttribute('position', { x: -45, y: 15, z: 0})
                     
                 }, 5000);
                 
@@ -1210,8 +1210,8 @@
 
                 // Hide the message after 5 seconds of being shown
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -20, y: 20, z: 40})
-                    player2Text.setAttribute('position', { x: -45, y: 20, z: 0})
+                    player1Text.setAttribute('position', { x: -20, y: 10, z: 40})
+                    player2Text.setAttribute('position', { x: -45, y: 10, z: 0})
                     
                     roundEndMessage1.style.display = 'none';
                 }, 5000);
