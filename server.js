@@ -265,6 +265,9 @@ io.on('connection', (socket) => {
 
     // When the visibility is toggled
     socket.on('toggleModelVisibility2', (newVisibility) => {
+
+        socket.emit('toggleModelVisibility2', newVisibility);
+
         // Broadcast to all clients to sync the visibility
         socket.broadcast.emit('toggleModelVisibility2', newVisibility);
     });

@@ -588,12 +588,16 @@
 
         <!-- Points in the scene (with visual spheres) -->
         <a-entity id="point1" position="-20 2 12.5">
+            <a-sphere id="sphere1" radius="2" color="#ff00f7"></a-sphere>
         </a-entity>
         <a-entity id="point2" position="20 2 12.5">
+            <a-sphere id="sphere2" radius="2" color="#ff8400"></a-sphere>
         </a-entity>
         <a-entity id="point3" position="0 2 -25">
+            <a-sphere id="sphere3" radius="2" color="#00ff00"></a-sphere>
         </a-entity>
         <a-entity id="point4" position="0 0 0">
+            <a-sphere id="sphere4" radius="0.3" color="#FF0000"></a-sphere>
         </a-entity>
 
         <!-- Points in the scene (with visual spheres) -->
@@ -609,6 +613,7 @@
 
 
     <iframe 
+        id="myIframe"
         src="https://player.twitch.tv/?channel=emmaschwarz3888&parent=ar-space.onrender.com" 
         allowfullscreen="false">
     </iframe>
@@ -747,8 +752,6 @@
 
         function triggerSpecialAction1() {
 
-            const closestPointInterval = setInterval(updateClosestPoint, 2000);
-
             const modelContainer = document.getElementById('modelContainer');
             
             // Get the current visibility (convert string to boolean)
@@ -846,6 +849,19 @@
         // Client-side (JavaScript)
         // Listen for the event to trigger visibility change and start the countdown
         socket.on('round0_0Activated', (newVisibility) => {
+
+            drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora, 50, 60);
+            drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup2, colorb, 50, 60);
+            drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1c, y1c, x2c, y2c, x3c, y3c, triangleGroup3, colorc, 50, 60);
+
+            const point1 = document.getElementById("point1");
+            point1.setAttribute("position", `${-20} ${2000} ${12.5}`);
+
+            const point2 = document.getElementById("point2");
+            point2.setAttribute("position", `${20} ${2000} ${12.5}`);
+
+            const point3 = document.getElementById("point3");
+            point3.setAttribute("position", `${0} ${2000} ${-25}`);
 
             // Stop the interval when needed
             clearInterval(closestPointInterval);
@@ -1250,6 +1266,21 @@
 
         // Listen for the toggle visibility sync
         socket.on('toggleModelVisibility', (newVisibility) => {
+
+            const point1 = document.getElementById("point1");
+            point1.setAttribute("position", `${-20} ${2} ${12.5}`);
+
+            const point2 = document.getElementById("point2");
+            point2.setAttribute("position", `${20} ${2} ${12.5}`);
+
+            const point3 = document.getElementById("point3");
+            point3.setAttribute("position", `${0} ${2} ${-25}`);
+
+            const iframe = document.getElementById("myIframe");
+            iframe.style.visibility = "visible";
+
+            const closestPointInterval = setInterval(updateClosestPoint, 2000);
+
             const modelContainer = document.getElementById('modelContainer');
             modelContainer.setAttribute('visible', newVisibility);
         });
