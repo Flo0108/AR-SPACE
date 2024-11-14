@@ -1882,8 +1882,18 @@
         function drawAndDisplayTriangles(scene, subdivisionDepth, x1, y1, x2, y2, x3, y3, triangleGroup, triangleColor, percentage_val_0, percentage_val_1) {
             const triangles = [];
 
+            let scale = 0.9; // Default scale value
+
+            // Adjust scale based on subdivision depth
+            // Adjust scale based on subdivision depth
+            if (subdivisionDepth < 1) {
+                scale = 0.98;
+            } else if (subdivisionDepth === 1) {
+                scale = 0.95;
+            }
+
             // Collect triangles
-            subdivideAndCollectTriangles(x1, y1, x2, y2, x3, y3, subdivisionDepth, 0.9, triangles);
+            subdivideAndCollectTriangles(x1, y1, x2, y2, x3, y3, subdivisionDepth, scale, triangles);
 
             // Remove the previous triangles from the group
             triangleGroup.forEach(triangle => triangle.parentNode.removeChild(triangle));
@@ -1981,7 +1991,7 @@
         const triangleGroup11 = [];
         const triangleGroup12 = [];
 
-        drawAndDisplayTriangles(document.querySelector('a-scene'), 3, x1b, y1b, x2a, y2a, x2b, y2b, triangleGroup0, colora, 50, 100);
+        drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2a, y2a, x2b, y2b, triangleGroup0, colora, 50, 100);
 
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora, 50, 60);
         drawAndDisplayTriangles(document.querySelector('a-scene'), 0, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup2, colorb, 50, 60);
