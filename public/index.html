@@ -608,6 +608,18 @@
             <a-sphere radius="2" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
         </a-entity>
 
+        <a-entity id="leftController" tracked-controls="hand: left" 
+                oculus-touch-controls="hand: left"></a-entity>
+        <a-entity id="rightController" tracked-controls="hand: right" 
+                oculus-touch-controls="hand: right"></a-entity>
+
+        <a-entity id="leftController" tracked-controls="hand: left" 
+                oculus-touch-controls="hand: left" 
+                events="thumbstickmoved: handleThumbstickMove"></a-entity>
+        <a-entity id="rightController" tracked-controls="hand: right" 
+                oculus-touch-controls="hand: right" 
+                events="thumbstickmoved: handleThumbstickMove"></a-entity>
+
 
     </a-scene>
 
