@@ -28,13 +28,21 @@ io.on('connection', (socket) => {
     socket.emit('currentPlayers', players);
 
     // Notify other players about the new player
-    socket.broadcast.emit('newPlayer', { id: socket.id, position: players[socket.id].position, name: randomName });
+    socket.broadcast.emit('newPlayer', { id: socket.id, position: players[socket.id].position, name: players[socket.id].name});
 
     // Update player's position on movement
     socket.on('move', (data) => {
         if (players[socket.id]) {
             players[socket.id].position = data.position;
             socket.broadcast.emit('move', { id: socket.id, position: data.position });
+        }
+    });
+
+    socket.on('playerName', (playerName) => {
+        if (players[socket.id]){
+            players[socket.id].name = playerName;
+            console.log(players[socket.id].name);
+            socket.broadcast.emit('nameChange', { id: socket.id, name: players[socket.id].name });
         }
     });
     
