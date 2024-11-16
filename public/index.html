@@ -1430,7 +1430,7 @@
                     nameText.object3D.position.set(
 
                         data.position.x,
-                        data.position.y + 6.2, // Adjust Y to be above the sphere
+                        data.position.y + 4.2, // Adjust Y to be above the sphere
                         data.position.z
                     );
                 }
@@ -1509,7 +1509,7 @@
             playerNameText.setAttribute('align', 'center');
             playerNameText.setAttribute('color', 'black');
             playerNameText.setAttribute('width', '20'); // Adjust width if needed
-            playerNameText.object3D.position.set(position.x, position.y + 6.2, position.z); // Position above the sphere
+            playerNameText.object3D.position.set(position.x, position.y + 4.2, position.z); // Position above the sphere
 
             // Append text to the scene and link it to the player
             document.querySelector('a-scene').appendChild(playerNameText);
@@ -1894,7 +1894,7 @@
                     // Update the name tag position to stay above the player's sphere
                     const nameText = playerSphere.nameText;
                     if (nameText) {
-                        nameText.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y + 6.2} ${player.object3D.position.z}`);
+                        nameText.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y + 4.2} ${player.object3D.position.z}`);
                     }
                 }
 

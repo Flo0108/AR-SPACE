@@ -9,7 +9,7 @@ const io = socketIo(server);
 app.use(express.static('public'));
 
 const players = {};
-const playerNames = ['Alice', 'Bob', 'Charlie', 'Diana', 'Eve', 'Frank', 'Grace', 'Heidi', 'Ivan', 'Judy'];
+const playerNames = ['HappyHippo', 'MuskokaMoose', 'CheeryChameleon', 'GoofyGoose', 'CringeCamel'];
 const playerSupportPoints = {}; // Store each player’s support point
 const pointCounts = { point1: 0, point2: 0, point3: 0 }; // Initial counts for each point
 
