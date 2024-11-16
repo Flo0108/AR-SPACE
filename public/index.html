@@ -429,7 +429,7 @@
 
         <!-- GLTF Model 1 -->
         <a-entity gltf-model="models/Testarena.glb"
-                    visible="false"
+                    visible="true"
                     position="0 0 0"
                     scale="1 1 1"
                     material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
@@ -565,36 +565,68 @@
 
 
         <!-- GLTF Model 1 -->
-        <a-entity id="player-model" visible="false"
-                    gltf-model="models/Character.glb"
-                    position="0 0 0"
-                    scale="4 4 4"
-                    material="shader: standard; emissive: #FF0000; emissiveIntensity: 0.1"
-                    shadow="receive: true; cast: true">
+        <a-entity id="otherPlayers" visible="false"
+                gltf-model="models/Character.glb"
+                position="0 0 0"
+                scale="4 4 4"
+                material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.1"
+                shadow="receive: true; cast: true">
         </a-entity>
+
+
+
 
         <!-- Player Entity -->
         <a-entity id="player" position="0 1 0">
             <!-- Player sphere at height 1 -->
-            <a-sphere id="player-sphere" radius="0.5" color="#FF0000"></a-sphere>
+            <a-sphere id="player-sphere" radius="0.5" color="#FF0000" visible="false"></a-sphere>
+
+            <!-- GLTF Model 1 -->
+            <a-entity id="player-model" visible="true"
+                        gltf-model="models/Character.glb"
+                        position="0 0 0"
+                        scale="4 4 4"
+                        material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.1"
+                        shadow="receive: true; cast: true">
+            </a-entity>
 
             <!-- Camera with raycaster and name text -->
             <a-camera id="playerCamera" position="0 2 0" raycaster="objects: .interactive-box; showLine: false; far: 200">
+
                 <!-- Text to display the player name above the avatar -->
-                <a-text id="playerNameText" value="PlayerName" position="0 1 -1" align="center" color="black" scale="1 1 1"></a-text>
+                <a-text id="playerNameText" value="PlayerName" position="0 3 -1" align="center" color="black" scale="1 1 1"></a-text>
             </a-camera>
         </a-entity>
 
 
         <!-- Points in the scene (with visual spheres) -->
         <a-entity id="point1" position="-20 2 12.5">
-            <a-sphere id="sphere1" radius="2" color="#ff00f7"></a-sphere>
+            <!-- GLTF Model 1 -->
+            <a-entity visible="true"
+                    gltf-model="models/Speaker.glb"
+                    position="0 0 0"
+                    scale="4 4 4"
+                    material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.0"
+                    shadow="receive: true; cast: true">
+            </a-entity>            
         </a-entity>
         <a-entity id="point2" position="20 2 12.5">
-            <a-sphere id="sphere2" radius="2" color="#ff8400"></a-sphere>
+            <a-entity visible="true"
+                    gltf-model="models/Speaker.glb"
+                    position="0 0 0"
+                    scale="4 4 4"
+                    material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.0"
+                    shadow="receive: true; cast: true">
+            </a-entity>      
         </a-entity>
         <a-entity id="point3" position="0 2 -25">
-            <a-sphere id="sphere3" radius="2" color="#00ff00"></a-sphere>
+            <a-entity visible="true"
+                    gltf-model="models/Speaker.glb"
+                    position="0 0 0"
+                    scale="4 4 4"
+                    material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.0"
+                    shadow="receive: true; cast: true">
+            </a-entity>      
         </a-entity>
         <a-entity id="point4" position="0 0 0">
             <a-sphere id="sphere4" radius="0.3" color="#FF0000"></a-sphere>
@@ -602,10 +634,22 @@
 
         <!-- Points in the scene (with visual spheres) -->
         <a-entity id="point5" position="-2000 2 -4000">
-            <a-sphere radius="2" color="#00FF00"></a-sphere> <!-- Green Sphere for Point 2 -->
+            <a-entity visible="true"
+                    gltf-model="models/Speaker.glb"
+                    position="0 0 0"
+                    scale="4 4 4"
+                    material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.0"
+                    shadow="receive: true; cast: true">
+            </a-entity>    
         </a-entity>
         <a-entity id="point6" position="2000 2 -4000">
-            <a-sphere radius="2" color="#FFFF00"></a-sphere> <!-- Yellow Sphere for Point 3 -->
+            <a-entity visible="true"
+                    gltf-model="models/Speaker.glb"
+                    position="0 0 0"
+                    scale="4 4 4"
+                    material="shader: standard; color: orange; emissive: #FF0000; emissiveIntensity: 0.0"
+                    shadow="receive: true; cast: true">
+            </a-entity>    
         </a-entity>
 
         <a-entity id="leftController" oculus-touch-controls="hand: left"></a-entity>
@@ -919,8 +963,8 @@
                     roundEndMessage1.style.display = 'none';
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position', {x: -20, y: 10, z: -40})
-                    speakerText.setAttribute('position', {x: -20, y: 15, z: -40})
+                    timerText.setAttribute('position', {x: -20, y: 20, z: -40})
+                    speakerText.setAttribute('position', {x: -20, y: 25, z: -40})
 
                     drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1aa, y1aa, x2aa, y2aa, x3aa, y3aa, triangleGroup4, colora, 50, 60);
                     
@@ -930,8 +974,8 @@
 
 
             // Set a new position using setAttribute
-            point5.setAttribute('position', { x: -20, y: 5, z: -40});
-            point6.setAttribute('position', { x: 20, y: 5, z: -40});
+            point5.setAttribute('position', { x: -20, y: 0, z: -40});
+            point6.setAttribute('position', { x: 20, y: 0, z: -40});
 
             // Show the message after a delay (e.g., 5 seconds)
             setTimeout(() => {
@@ -951,8 +995,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position', {x: 20, y: 10, z: -40})
-                    speakerText.setAttribute('position', {x: 20, y: 15, z: -40})
+                    timerText.setAttribute('position', {x: 20, y: 20, z: -40})
+                    speakerText.setAttribute('position', {x: 20, y: 25, z: -40})
                     
                 }, 5000);
                 
@@ -974,8 +1018,8 @@
 
                 // Hide the message after 5 seconds of being shown
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -20, y: 15, z: -40})
-                    player2Text.setAttribute('position', { x: 20, y: 15, z: -40})
+                    player1Text.setAttribute('position', { x: -20, y: 20, z: -40})
+                    player2Text.setAttribute('position', { x: 20, y: 20, z: -40})
                     
                     roundEndMessage1.style.display = 'none';
                 }, 5000);
@@ -985,8 +1029,8 @@
                 }, 10000); 
 
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -2000, y: 15, z: -40})
-                    player2Text.setAttribute('position', { x: 2000, y: 15, z: -40})
+                    player1Text.setAttribute('position', { x: -2000, y: 20, z: -40})
+                    player2Text.setAttribute('position', { x: 2000, y:20, z: -40})
                 }, 15000)
 
             }, 30000); // 10 seconds in milliseconds
@@ -1032,8 +1076,8 @@
             roundEndMessage1.style.display = 'flex'; // Show the message
 
 
-            point5.setAttribute('position', { x: 40, y: 5, z: 0});
-            point6.setAttribute('position', { x: 20, y: 5, z: 40});
+            point5.setAttribute('position', { x: 40, y: 0, z: 0});
+            point6.setAttribute('position', { x: 20, y: 0, z: 40});
 
 
             setTimeout(() => {
@@ -1054,8 +1098,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   { x: 40, y: 10, z: 0})
-                    speakerText.setAttribute('position', { x: 40, y: 15, z: 0})
+                    timerText.setAttribute('position',   { x: 40, y: 20, z: 0})
+                    speakerText.setAttribute('position', { x: 40, y: 25, z: 0})
 
 
                     
@@ -1082,8 +1126,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   {x: 20, y: 10, z: 40})
-                    speakerText.setAttribute('position', {x: 20, y: 15, z: 40})
+                    timerText.setAttribute('position',   {x: 20, y: 20, z: 40})
+                    speakerText.setAttribute('position', {x: 20, y: 25, z: 40})
                     
                 }, 5000);
                 
@@ -1160,8 +1204,8 @@
             const roundEndMessage1 = document.getElementById('roundEndMessage1');
             roundEndMessage1.style.display = 'flex'; // Show the message
 
-            point5.setAttribute('position', { x: -20, y: 5, z: 40});
-            point6.setAttribute('position', { x: -45, y: 5, z: 0});
+            point5.setAttribute('position', { x: -20, y: 0, z: 40});
+            point6.setAttribute('position', { x: -45, y: 0, z: 0});
 
 
 
@@ -1183,8 +1227,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   { x: -20, y: 10, z: 40})
-                    speakerText.setAttribute('position', { x: -20, y: 15, z: 40})
+                    timerText.setAttribute('position',   { x: -20, y: 20, z: 40})
+                    speakerText.setAttribute('position', { x: -20, y: 25, z: 40})
                     
                 }, 5000);
             }, 5000);
@@ -1209,8 +1253,8 @@
 
                     countdownValue = 5; // Reset to 5 minutes
                     countdownInterval = setInterval(updateTimer, 1000); // Start the countdown
-                    timerText.setAttribute('position',   { x: -45, y: 10, z: 0})
-                    speakerText.setAttribute('position', { x: -45, y: 15, z: 0})
+                    timerText.setAttribute('position',   { x: -45, y: 20, z: 0})
+                    speakerText.setAttribute('position', { x: -45, y: 25, z: 0})
                     
                 }, 5000);
                 
@@ -1232,8 +1276,8 @@
 
                 // Hide the message after 5 seconds of being shown
                 setTimeout(() => {
-                    player1Text.setAttribute('position', { x: -20, y: 10, z: 40})
-                    player2Text.setAttribute('position', { x: -45, y: 10, z: 0})
+                    player1Text.setAttribute('position', { x: -20, y: 20, z: 40})
+                    player2Text.setAttribute('position', { x: -45, y: 20, z: 0})
                     
                     roundEndMessage1.style.display = 'none';
                 }, 5000);
@@ -1384,12 +1428,21 @@
                 const nameText = playerSphere.nameText;
                 if (nameText) {
                     nameText.object3D.position.set(
+
                         data.position.x,
-                        data.position.y + 1.2, // Adjust Y to be above the sphere
+                        data.position.y + 6.2, // Adjust Y to be above the sphere
                         data.position.z
                     );
                 }
             }
+
+
+            const playerModel = players[data.id].model;
+            if (playerModel) {
+                    playerModel.setAttribute('position', `${data.position.x} ${data.position.y} ${data.position.z}`);
+            }
+        
+
         });
 
         // Handle player disconnect
@@ -1427,9 +1480,28 @@
             }
             
             sphere.setAttribute('position', position);
+            sphere.setAttribute('visible', false);
             sphere.setAttribute('id', id);
             document.querySelector('a-scene').appendChild(sphere);
             players[id] = sphere; // Store the sphere for future reference
+
+
+            // Generate a random color
+            const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+            // Create a GLTF model for the player
+            const playerModel = document.createElement('a-entity');
+            playerModel.setAttribute('gltf-model', 'models/Character.glb');
+            playerModel.setAttribute('position', position); // Set the same position as the sphere
+            playerModel.setAttribute('scale', '4 4 4');
+            // Set the material with the random color
+            playerModel.setAttribute(
+                'material',
+                `shader: standard; color: ${randomColor};`
+            );
+            playerModel.setAttribute('shadow', 'receive: true; cast: true');
+            document.querySelector('a-scene').appendChild(playerModel);
+            players[id].model = playerModel; // Store the model for future reference
+
 
             // Create a text label for the player's name
             const playerNameText = document.createElement('a-text');
@@ -1437,7 +1509,7 @@
             playerNameText.setAttribute('align', 'center');
             playerNameText.setAttribute('color', 'black');
             playerNameText.setAttribute('width', '20'); // Adjust width if needed
-            playerNameText.object3D.position.set(position.x, position.y + 1.2, position.z); // Position above the sphere
+            playerNameText.object3D.position.set(position.x, position.y + 6.2, position.z); // Position above the sphere
 
             // Append text to the scene and link it to the player
             document.querySelector('a-scene').appendChild(playerNameText);
@@ -1445,6 +1517,9 @@
 
             console.log(`Created sphere for player ${id} with name tag at position`, position); // Debug
         }
+
+
+        
 
         // Calculate and display the closest point
         function updateClosestPoint() {
@@ -1819,9 +1894,23 @@
                     // Update the name tag position to stay above the player's sphere
                     const nameText = playerSphere.nameText;
                     if (nameText) {
-                        nameText.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y + 1.2} ${player.object3D.position.z}`);
+                        nameText.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y + 6.2} ${player.object3D.position.z}`);
                     }
                 }
+
+                const playerModel = players[socket.id].model;
+                if (playerModel) {
+
+                    // Generate a random color
+                    const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+                    playerModel.setAttribute(
+                        'material',
+                        `shader: standard; color: ${randomColor};`
+                    );
+
+                    playerModel.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y} ${player.object3D.position.z}`);
+                }
+                    
 
                 // Emit the new position to the server
                 socket.emit('move', { id: socket.id, position: player.object3D.position });
