@@ -737,7 +737,7 @@
         // Joystick movement handling
         joystick.on('move', (evt, data) => {
             joystickActive = true; // Joystick is being manipulated
-            const moveDistance = 0.6; // Movement speed
+            const moveDistance = 0.3; // Movement speed
             const angle = data.angle.degree;
 
             const rad = angle * (Math.PI / 180); // Convert to radians
