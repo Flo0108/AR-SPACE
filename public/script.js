@@ -29,7 +29,7 @@
 
         const grid      = document.getElementById("grid");
 
-        const rows      = 40;
+        const rows      = 20;
         const cols      = rows;
         const spacing   = 1.2;
         const planeSize = 1;
@@ -44,8 +44,8 @@
         }
 
         // Generate the grid of planes
-        for (let i = -20; i < rows; i++) {
-            for (let j = -20; j < cols; j++) {
+        for (let i = -10; i < rows; i++) {
+            for (let j = -10; j < cols; j++) {
                 const plane = document.createElement("a-plane");
                 const x = j * spacing;
                 const z = i * spacing;
@@ -77,7 +77,7 @@
             const playerPos = new THREE.Vector3();
             camera.getWorldPosition(playerPos);
 
-
+            
 
             const planes = document.querySelectorAll(".grid-plane");
 
@@ -85,8 +85,6 @@
                 const planePos = new THREE.Vector3();
                 plane.object3D.getWorldPosition(planePos);
                 const distance = playerPos.distanceTo(planePos);
-
-                console.log(`Player Position: ${playerPos.toArray()}, Plane Position: ${planePos.toArray()}, Distance: ${distance}`);
 
                 if (distance <= visibilityDistance) {
                     let value = 1 / distance * 1.2;
@@ -98,7 +96,12 @@
                     plane.setAttribute("visible", "true");
                 }
             });
+
+            // Request the next frame
+            requestAnimationFrame(updateVisibility);
+
         }
+
 
         requestAnimationFrame(updateVisibility);
 
@@ -899,7 +902,30 @@
         });
 
 
+        socket.on('newCube', (cubePosition) => {
+
+            console.log(cubePosition)
+            placeOtherCube(cubePosition)
+            
+        });
         
+
+        socket.on('updateModelVisibility', (newVisibility) => {
+            const modelContainer = document.getElementById('modelContainer');
+            modelContainer.setAttribute('visible', newVisibility);
+        });
+
+
+        // Function to place cube at the player's current position
+        function placeOtherCube(cubePosition) {
+            // Create the cube
+            const cube = document.createElement("a-box");
+            cube.setAttribute("position", `${cubePosition.x + 11} ${cubePosition.y} ${cubePosition.z + 11}`);
+            cube.setAttribute("color", "blue");
+            grid.appendChild(cube);
+
+        }
+
 
         // Function to place cube at the player's current position
         function placeCube() {
@@ -909,9 +935,11 @@
 
             // Create the cube
             const cube = document.createElement("a-box");
-            cube.setAttribute("position", `${playerPos.x + 22} ${playerPos.y} ${playerPos.z + 22}`);
+            cube.setAttribute("position", `${playerPos.x + 11} ${playerPos.y} ${playerPos.z + 11}`);
             cube.setAttribute("color", "blue");
             grid.appendChild(cube);
+
+            socket.emit('CubePosition', playerPos)
         }
 
         // Event listener for button click

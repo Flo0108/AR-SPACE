@@ -228,7 +228,7 @@
 
 
     <!-- Button to trigger placement -->
-    <button id="placeButton">Place Cube</button>
+    <button id="placeButton">Place Your Idea</button>
     
     <!-- A-Frame Scene -->
     <a-scene embedded>
@@ -243,6 +243,7 @@
         <a-sky color="#99CEEB"></a-sky> <!-- Light blue sky color -->
 
         <a-entity id="grid"></a-entity>
+        <a-entity id="grid2"></a-entity>
 
         <!-- Lights -->
         <a-light type="ambient" color="#FFF" intensity="1"></a-light>
@@ -271,6 +272,17 @@
             material="shader: standard; emissive: #4CC3D9; emissiveIntensity: 0.1; opacity: 0.9" 
             shadow="receive: true; cast: false" 
             color="#4CC3D9">
+        </a-entity>
+
+
+        <!-- GLTF Model Thumbs Down-->
+        <a-entity id="05" visible ="true"
+            class="sphere" 
+            gltf-model="models/Model.glb" 
+            position="0 0 0" 
+            rotation="0 0 0" 
+            scale="1 1 1" 
+            shadow="receive: true; cast: true" >
         </a-entity>
 
 

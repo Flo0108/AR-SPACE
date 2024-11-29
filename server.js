@@ -15,6 +15,8 @@ const pointCounts = { point1: 0, point2: 0, point3: 0 }; // Initial counts for e
 
 const playerScores = { point1: 0, point2: 0, point3: 0 }
 
+const cubePositions = {};
+
 
 
 io.on('connection', (socket) => {
@@ -46,6 +48,14 @@ io.on('connection', (socket) => {
         }
     });
     
+    socket.on('CubePosition', (cubePosition) => {
+        console.log(cubePosition);
+        socket.broadcast.emit('newCube', cubePosition);
+        }
+    );
+
+    
+
 
     // Handle updates from players about their support point
     socket.on('updateSupportPoint', (data) => {
