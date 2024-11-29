@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Flat Grid with Distance Filtering</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #placeButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <!-- Button to trigger placement -->
+    <button id="placeButton">Place Cube</button>
+
+    <a-scene>
+
+        <a-sky color="#99CEEB"></a-sky> <!-- Light blue sky color -->
+
+        
+
+        <a-entity id="grid"></a-entity>
+
+        <!-- Player camera -->
+        <a-camera id="player" position="0 1.6 0" wasd-controls-enabled="true"></a-camera>
+    </a-scene>
+
+    <script>
+        const grid   = document.getElementById("grid");
+        const player = document.getElementById("player");
+
+        const rows      = 40;
+        const cols      = rows;
+        const spacing   = 1.2;
+        const planeSize = 1;
+        const visibilityDistance = 10;
+
+        // Function to calculate distance between two positions
+        function calculateDistance(pos1, pos2) {
+            const dx = pos1.x - pos2.x;
+            const dy = pos1.y - pos2.y;
+            const dz = pos1.z - pos2.z;
+            return Math.sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        // Generate the grid of planes
+        for (let i = -20; i < rows; i++) {
+            for (let j = -20; j < cols; j++) {
+                const plane = document.createElement("a-plane");
+                const x = j * spacing;
+                const z = i * spacing;
+                const y = 0;
+
+                plane.setAttribute("position", `${x} ${y} ${z}`);
+                plane.setAttribute("rotation", "-90 0 0");
+                plane.setAttribute("width", planeSize);
+                plane.setAttribute("height", planeSize);
+                plane.setAttribute("color", "#7BC8A4");
+                plane.setAttribute("visible", "false");
+                plane.classList.add("grid-plane");
+
+                grid.appendChild(plane);
+            }
+        }
+
+        // Center the grid around the origin
+        const offsetX = (cols - 1) * spacing / 2;
+        const offsetZ = (rows - 1) * spacing / 2;
+
+        grid.setAttribute("position", `-${offsetX} 0 -${offsetZ}`);
+
+        // Update visibility based on player's distance
+        function updateVisibility() {
+            const camera = player.object3D;
+            const playerPos = new THREE.Vector3();
+            camera.getWorldPosition(playerPos);
+
+            const planes = document.querySelectorAll(".grid-plane");
+
+            planes.forEach((plane) => {
+                const planePos = new THREE.Vector3();
+                plane.object3D.getWorldPosition(planePos);
+                const distance = playerPos.distanceTo(planePos);
+
+                console.log(`Player Position: ${playerPos.toArray()}, Plane Position: ${planePos.toArray()}, Distance: ${distance}`);
+
+                if (distance <= visibilityDistance) {
+                    let value = 1 / distance * 1.2;
+                    value = Math.max(0.1, Math.min(value, 5))  + 0.5;
+                    plane.object3D.scale.set(value, value, value);
+                    plane.setAttribute("visible", "true");
+                } else {
+                    plane.object3D.scale.set(0.25, 0.25, 0.25);
+                    plane.setAttribute("visible", "true");
+                }
+            });
+        }
+
+
+        setInterval(updateVisibility, 100);
+
+        // Function to place cube at the player's current position
+        function placeCube() {
+            const camera = player.object3D;
+            const playerPos = new THREE.Vector3();
+            camera.getWorldPosition(playerPos); 
+
+            // Create the cube
+            const cube = document.createElement("a-box");
+            cube.setAttribute("position", `${playerPos.x + 22} ${playerPos.y} ${playerPos.z + 22}`);
+            cube.setAttribute("color", "blue");
+            grid.appendChild(cube);
+        }
+
+        // Event listener for button click
+        document.getElementById("placeButton").addEventListener("click", placeCube);
+    </script>
+</body>
+</html>
