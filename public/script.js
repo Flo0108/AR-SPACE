@@ -77,6 +77,8 @@
             const playerPos = new THREE.Vector3();
             camera.getWorldPosition(playerPos);
 
+
+
             const planes = document.querySelectorAll(".grid-plane");
 
             planes.forEach((plane) => {
@@ -98,7 +100,7 @@
             });
         }
 
-        setInterval(updateVisibility, 100);
+        requestAnimationFrame(updateVisibility);
 
 
 
