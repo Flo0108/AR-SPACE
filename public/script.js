@@ -696,8 +696,10 @@
             const cube = document.createElement("a-box");
             cube.setAttribute("position", `${cubePosition.x + 28} ${cubePosition.y} ${cubePosition.z + 3}`);
             cube.setAttribute("color", "blue");
-            cube.setAttribute("scale", "0.5 0.5 0.5");
+            cube.setAttribute("scale", "1 1 1");
+            cube.classList.add("interactive"); // Make text reactive to the raycaster
             
+
             // Create the text
             const text = document.createElement("a-text");
             text.setAttribute("value", textplacer); // Text to display
@@ -706,6 +708,21 @@
             text.setAttribute("position", `${cubePosition.x + 28} ${cubePosition.y + 2} ${cubePosition.z + 3}`); // Position above the cube
             text.setAttribute("side", "double"); // Render on both sides
             text.setAttribute("scale", "2 2 2"); // Scale of the text
+            text.setAttribute('visible', false)
+            
+
+            // Add raycaster interaction events
+            cube.addEventListener("raycaster-intersected", () => {
+                cube.setAttribute("color", "yellow"); // Highlight when intersected
+                text.setAttribute('visible', true)
+            });
+        
+            cube.addEventListener("raycaster-intersected-cleared", () => {
+                cube.setAttribute("color", "blue"); // Reset color when not intersected
+                text.setAttribute('visible', false)
+            });
+
+
 
             // Append the text to the grid
             grid.appendChild(text);
@@ -741,8 +758,19 @@
                     const cube = document.createElement("a-box");
                     cube.setAttribute("position", `${playerPos.x + 28} ${playerPos.y} ${playerPos.z + 3}`);
                     cube.setAttribute("color", "blue");
-                    cube.setAttribute("scale", "0.5 0.5 0.5");
+                    cube.setAttribute("scale", "1 1 1");
+                    cube.classList.add("interactive"); // Make text reactive to the raycaster
+            
+                    // Add raycaster interaction events
+                    cube.addEventListener("raycaster-intersected", () => {
+                        cube.setAttribute("color", "yellow"); // Highlight when intersected
+                    });
+                
+                    cube.addEventListener("raycaster-intersected-cleared", () => {
+                        cube.setAttribute("color", "blue"); // Reset color when not intersected
+                    });
         
+
                     // Create the text
                     const text = document.createElement("a-text");
                     text.setAttribute("value", inputText); // Use player's input
