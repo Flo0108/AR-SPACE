@@ -26,11 +26,27 @@
         <input type="text" id="playerNameInput" placeholder="Your Name">
         <button id="joinButton" onclick="submitName()">Join</button>
     </div>
+
+
+    
     <div id="textModal" 
         style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 9999;">
+        
+        
         <label for="cubeText">Enter text to display above the cube:</label>
-        <input id="cubeText" type="text" style="width: 100%; margin-top: 10px; padding: 8px;">
+        <input id="cubeText" type="text" placeholder="Enter your ideas here" style="width: 100%; margin-top: 10px; padding: 8px;">
+
+        
+        <!-- Symbols for model selection -->
+        <div id="symbolSelection">
+            <button class="symbol" data-symbol="🪑">🪑</button>
+            <button class="symbol" data-symbol="🌲">🌲</button>
+            <button class="symbol" data-symbol="☀️">☀️</button>
+        </div>
+
         <button id="submitText" style="margin-top: 10px;">Submit</button>
+
+
     </div>
     
 
@@ -316,9 +332,9 @@
         <a-entity id="05" visible ="true"
             class="sphere" 
             gltf-model="models/Model.glb" 
-            position="0 0 0" 
+            position="0 0 -5" 
             rotation="0 0 0" 
-            scale="0.1 0.1 0.1" 
+            scale="0.2 0.2 0.2" 
             shadow="receive: false; cast: false" 
             material="shader: standard;">
         </a-entity>

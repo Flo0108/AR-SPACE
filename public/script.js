@@ -5,7 +5,7 @@
 
         // Function to set camera height based on VR status
         function setCameraHeight(isVR) {
-            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 10, z: 0 });
+            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 1, z: 0 });
         }
 
         // Listen for entering and exiting VR mode
@@ -349,12 +349,11 @@
                     nameText.object3D.position.set(
 
                         data.position.x,
-                        data.position.y + 4.2, // Adjust Y to be above the sphere
+                        data.position.y + 1.2, // Adjust Y to be above the sphere
                         data.position.z
                     );
                 }
             }
-
 
             const playerModel = players[data.id].model;
             if (playerModel) {
@@ -579,7 +578,7 @@
                     // Update the name tag position to stay above the player's sphere
                     const nameText = playerSphere.nameText;
                     if (nameText) {
-                        nameText.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y + 4.2} ${player.object3D.position.z}`);
+                        nameText.setAttribute('position', `${player.object3D.position.x} ${player.object3D.position.y + 1.2} ${player.object3D.position.z}`);
                     }
                 }
 
@@ -696,7 +695,7 @@
             const cube = document.createElement("a-box");
             cube.setAttribute("position", `${cubePosition.x + 28} ${cubePosition.y} ${cubePosition.z + 3}`);
             cube.setAttribute("color", "blue");
-            cube.setAttribute("scale", "1 1 1");
+            cube.setAttribute("scale", "0.5 0.5 0.5");
             cube.classList.add("interactive"); // Make text reactive to the raycaster
             
 
@@ -715,6 +714,16 @@
             cube.addEventListener("raycaster-intersected", () => {
                 cube.setAttribute("color", "yellow"); // Highlight when intersected
                 text.setAttribute('visible', true)
+
+
+
+                const cameraPosition = new THREE.Vector3();
+                playerCamera.object3D.getWorldPosition(cameraPosition); // Get camera position
+                
+                const textPosition = new THREE.Vector3();
+                text.object3D.getWorldPosition(textPosition);
+                text.object3D.lookAt(cameraPosition); 
+
             });
         
             cube.addEventListener("raycaster-intersected-cleared", () => {
@@ -740,6 +749,16 @@
         
             // Show the modal
             textModal.style.display = "block";
+
+            // Handle symbol selection
+            const symbolButtons = document.querySelectorAll(".symbol");
+            symbolButtons.forEach(button => {
+                button.addEventListener("click", function () {
+                    selectedSymbol = this.getAttribute("data-symbol");
+                    console.log("Selected Symbol: ", selectedSymbol);
+                });
+            });
+
         
             // Handle text submission
             submitButton.onclick = function () {
@@ -758,9 +777,9 @@
                     const cube = document.createElement("a-box");
                     cube.setAttribute("position", `${playerPos.x + 28} ${playerPos.y} ${playerPos.z + 3}`);
                     cube.setAttribute("color", "blue");
-                    cube.setAttribute("scale", "1 1 1");
+                    cube.setAttribute("scale", "0.5 0.5 0.5");
                     cube.classList.add("interactive"); // Make text reactive to the raycaster
-            
+
                     // Add raycaster interaction events
                     cube.addEventListener("raycaster-intersected", () => {
                         cube.setAttribute("color", "yellow"); // Highlight when intersected
@@ -769,7 +788,7 @@
                     cube.addEventListener("raycaster-intersected-cleared", () => {
                         cube.setAttribute("color", "blue"); // Reset color when not intersected
                     });
-        
+            
 
                     // Create the text
                     const text = document.createElement("a-text");
@@ -783,6 +802,46 @@
                     // Append to the A-Frame scene
                     grid.appendChild(cube);
                     grid.appendChild(text);
+
+
+                    // Based on the selected symbol, load a different model (instead of cube)
+                    if (selectedSymbol) {
+                        switch (selectedSymbol) {
+                            case "🪑":
+                                // Load a diamond model or object
+                                const bench = document.createElement("a-entity");
+                                bench.setAttribute("gltf-model", "models/Bench.glb"); // Path to diamond model
+                                bench.setAttribute("position", `${playerPos.x + 28} ${playerPos.y} ${playerPos.z + 3}`);
+                                
+                                grid.appendChild(bench);
+                                break;
+
+                                case "🌲":
+                                    // Load a diamond model or object
+                                    const tree = document.createElement("a-entity");
+                                    tree.setAttribute("gltf-model", "models/Tree.glb"); // Path to diamond model
+                                    tree.setAttribute("position", `${playerPos.x + 28} ${playerPos.y} ${playerPos.z + 3}`);
+                                    
+                                    grid.appendChild(tree);
+                                    break;
+
+                                case "☀️":
+                                    // Load a diamond model or object
+                                    const pv = document.createElement("a-entity");
+                                    pv.setAttribute("gltf-model", "models/PV.glb"); // Path to diamond model
+                                    pv.setAttribute("position", `${playerPos.x + 28} ${playerPos.y} ${playerPos.z + 3}`);
+                                    
+                                    grid.appendChild(pv);
+                                    break;
+
+                            default:
+                                console.log("No model selected.");
+
+
+
+                                
+                        }
+                    }
         
                     // Emit position to the server
                     socket.emit('CubePosition', { id: playerPos, position: inputText });
