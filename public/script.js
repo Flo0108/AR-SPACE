@@ -5,7 +5,7 @@
 
         // Function to set camera height based on VR status
         function setCameraHeight(isVR) {
-            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 1.6, z: 0 });
+            playerCamera.setAttribute("position", { x: 0, y: isVR ? 1.6 : 10, z: 0 });
         }
 
         // Listen for entering and exiting VR mode
@@ -29,11 +29,11 @@
 
         const grid      = document.getElementById("grid");
 
-        const rows      = 20;
-        const cols      = rows;
-        const spacing   = 1.2;
+        const rows      = 10;
+        const cols      = 80;
+        const spacing   = 0.7;
         const planeSize = 1;
-        const visibilityDistance = 10;
+        const visibilityDistance = 3;
 
         // Function to calculate distance between two positions
         function calculateDistance(pos1, pos2) {
@@ -78,7 +78,6 @@
             camera.getWorldPosition(playerPos);
 
             
-
             const planes = document.querySelectorAll(".grid-plane");
 
             planes.forEach((plane) => {
@@ -87,12 +86,12 @@
                 const distance = playerPos.distanceTo(planePos);
 
                 if (distance <= visibilityDistance) {
-                    let value = 1 / distance * 1.2;
-                    value = Math.max(0.1, Math.min(value, 5))  + 0.5;
+                    let value = 1 / distance * 0.4;
+                    value = Math.max(0.01, Math.min(value, 2));
                     plane.object3D.scale.set(value, value, value);
                     plane.setAttribute("visible", "true");
                 } else {
-                    plane.object3D.scale.set(0.25, 0.25, 0.25);
+                    plane.object3D.scale.set(0.1, 0.1, 0.1);
                     plane.setAttribute("visible", "true");
                 }
             });
@@ -429,7 +428,8 @@
             playerNameText.setAttribute('align', 'center');
             playerNameText.setAttribute('color', 'black');
             playerNameText.setAttribute('width', '20'); // Adjust width if needed
-            playerNameText.object3D.position.set(position.x, position.y + 4.2, position.z); // Position above the sphere
+            playerNameText.setAttribute("scale", "0.5 0.5 0.5");
+            playerNameText.object3D.position.set(position.x, position.y + 2, position.z); // Position above the sphere
 
             // Append text to the scene and link it to the player
             document.querySelector('a-scene').appendChild(playerNameText);
@@ -467,239 +467,7 @@
         
         }
 
-        // Calculate and display the closest point
-        function updateClosestPoint1() {
-            const playerPos = player.getAttribute('position');
-            let closestPoint = null;
-            let closestDistance = Infinity;
 
-            // Iterate over defined points to find the closest one
-            points2.forEach(point => {
-                const pointPos = point.element.getAttribute('position');
-                const distance = Math.sqrt(
-                    Math.pow(pointPos.x - playerPos.x, 2) +
-                    Math.pow(pointPos.y - playerPos.y, 2) +
-                    Math.pow(pointPos.z - playerPos.z, 2)
-                );
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestPoint = point.id; // Keep track of the closest point
-                }
-            });
-
-            //console.log(closestPoint)
-        
-            // Send the closest point to the server
-            socket.emit('updateSupportPoint1', {
-                playerId: socket.id,  // Send player ID to the server
-                supportPoint: closestPoint // Send closest point ID
-            });
-        
-        }
-        
-        // Calculate and display the closest point
-        function updateClosestPoint2() {
-            const playerPos = player.getAttribute('position');
-            let closestPoint = null;
-            let closestDistance = Infinity;
-
-            // Iterate over defined points to find the closest one
-            points2.forEach(point => {
-                const pointPos = point.element.getAttribute('position');
-                const distance = Math.sqrt(
-                    Math.pow(pointPos.x - playerPos.x, 2) +
-                    Math.pow(pointPos.y - playerPos.y, 2) +
-                    Math.pow(pointPos.z - playerPos.z, 2)
-                );
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestPoint = point.id; // Keep track of the closest point
-                }
-            });
-
-            //console.log(closestPoint)
-        
-            // Send the closest point to the server
-            socket.emit('updateSupportPoint2', {
-                playerId: socket.id,  // Send player ID to the server
-                supportPoint: closestPoint // Send closest point ID
-            });
-        
-        }
-
-        // Calculate and display the closest point
-        function updateClosestPoint3() {
-            const playerPos = player.getAttribute('position');
-            let closestPoint = null;
-            let closestDistance = Infinity;
-
-            // Iterate over defined points to find the closest one
-            points2.forEach(point => {
-                const pointPos = point.element.getAttribute('position');
-                const distance = Math.sqrt(
-                    Math.pow(pointPos.x - playerPos.x, 2) +
-                    Math.pow(pointPos.y - playerPos.y, 2) +
-                    Math.pow(pointPos.z - playerPos.z, 2)
-                );
-
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestPoint = point.id; // Keep track of the closest point
-                }
-            });
-
-            //console.log(closestPoint)
-        
-            // Send the closest point to the server
-            socket.emit('updateSupportPoint3', {
-                playerId: socket.id,  // Send player ID to the server
-                supportPoint: closestPoint // Send closest point ID
-            });
-        
-        }
-
-
-
-        // Listen for support point updates from the server
-        socket.on('supportPoint1Update', (data) => {
-            const { pointCountsRound0, playerId, supportPoint, playerScores } = data;
-
-            console.log(pointCountsRound0)
-
-            // Update the HTML with the latest counts
-            document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCountsRound0.point5}`;
-            document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCountsRound0.point6}`;
-
-            // Assume these are the values to compare
-            const point5 = pointCountsRound0.point5;
-            const point6 = pointCountsRound0.point6;
-
-            // Determine the higher count and corresponding player number
-            let winningPlayer = 0;  // This will hold the player number (1 or 2)
-            if (point5 > point6) {
-                drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1aa, y1aa, x2aa, y2aa, x3aa, y3aa, triangleGroup4, colora, 50, 50);
-                winningPlayer = 1;
-            } else if (point6 > point5) {
-                drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1ab, y1ab, x2ab, y2ab, x3ab, y3ab, triangleGroup5, colora, 50, 50);
-                winningPlayer = 2;
-            } else {
-                winningPlayer = "It's a tie!";
-            }
-
-            drawAndDisplayTriangles(document.querySelector('a-scene'), 2, x1a, y1a, x2a, y2a, x3a, y3a, triangleGroup1, colora, 50, 50);
-
-            // Display the result based on the comparison
-            if (typeof winningPlayer === "number") {  // Only show a message if there’s a winning player
-                document.getElementById('gameStartedText1a').innerText = `Player ${winningPlayer}`;
-                document.getElementById('gameStartedText1b').innerText = 'You made it into the chamber of secrets, sit on your chair';
-            } else {
-                document.getElementById('gameStartedText1a').innerText = winningPlayer;
-                document.getElementById('gameStartedText1b').innerText = ''; // Clear the second line if it's a tie
-            }
-
-            roundEndMessage1.style.display = 'flex'; // Show the message
-
-            // Hide the message after 5 seconds of being shown
-            setTimeout(() => {
-                roundEndMessage1.style.display = 'none';
-            }, 5000);
-            });
-
-        // Listen for support point updates from the server
-        socket.on('supportPoint2Update', (data) => {
-            const { pointCountsRound0, playerId, supportPoint, playerScores } = data;
-
-            console.log(pointCountsRound0)
-
-            // Update the HTML with the latest counts
-            document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCountsRound0.point5}`;
-            document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCountsRound0.point6}`;
-
-            // Assume these are the values to compare
-            const point5 = pointCountsRound0.point5;
-            const point6 = pointCountsRound0.point6;
-
-            // Determine the higher count and corresponding player number
-            let winningPlayer = 0;  // This will hold the player number (1 or 2)
-            if (point5 > point6) {
-                drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1bb, y1bb, x2bb, y2bb, x3bb, y3bb, triangleGroup7, colorb, 50, 50);
-                winningPlayer = 1;
-            } else if (point6 > point5) {
-                drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1ba, y1ba, x2ba, y2ba, x3ba, y3ba, triangleGroup6, colorb, 50, 50);
-                winningPlayer = 2;
-            } else {
-                winningPlayer = "It's a tie!";
-            }
-
-            drawAndDisplayTriangles(document.querySelector('a-scene'), 2, x1b, y1b, x2b, y2b, x3b, y3b, triangleGroup2, colorb, 50, 50);
-
-            // Display the result based on the comparison
-            if (typeof winningPlayer === "number") {  // Only show a message if there’s a winning player
-                document.getElementById('gameStartedText1a').innerText = `Player ${winningPlayer}`;
-                document.getElementById('gameStartedText1b').innerText = 'You made it into the chamber of secrets, sit on your chair';
-            } else {
-                document.getElementById('gameStartedText1a').innerText = winningPlayer;
-                document.getElementById('gameStartedText1b').innerText = ''; // Clear the second line if it's a tie
-            }
-
-            roundEndMessage1.style.display = 'flex'; // Show the message
-
-            // Hide the message after 5 seconds of being shown
-            setTimeout(() => {
-                roundEndMessage1.style.display = 'none';
-            }, 5000);
-        });
-
-        // Listen for support point updates from the server
-        socket.on('supportPoint3Update', (data) => {
-            const { pointCountsRound0, playerId, supportPoint, playerScores } = data;
-
-            console.log(pointCountsRound0)
-
-            // Update the HTML with the latest counts
-            document.getElementById('point1Count').textContent = `Player 1 Supporters: ${pointCountsRound0.point5}`;
-            document.getElementById('point2Count').textContent = `Player 2 Supporters: ${pointCountsRound0.point6}`;
-
-            // Assume these are the values to compare
-            const point5 = pointCountsRound0.point5;
-            const point6 = pointCountsRound0.point6;
-
-
-            
-            
-
-            // Determine the higher count and corresponding player number
-            let winningPlayer = 0;  // This will hold the player number (1 or 2)
-            if (point5 > point6) {
-                drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1ca, y1ca, x2ca, y2ca, x3ca, y3ca, triangleGroup8, colorc, 50, 50);
-                winningPlayer = 1;
-            } else if (point6 > point5) {
-                drawAndDisplayTriangles(document.querySelector('a-scene'), 1, x1cb, y1cb, x2cb, y2cb, x3cb, y3cb, triangleGroup9, colorc, 50, 50);
-                winningPlayer = 2;
-            } else {
-                winningPlayer = "It's a tie!";
-            }
-
-            drawAndDisplayTriangles(document.querySelector('a-scene'), 2, x1c, y1c, x2c, y2c, x3c, y3c, triangleGroup3, colorc, 50, 50);
-
-            // Display the result based on the comparison
-            if (typeof winningPlayer === "number") {  // Only show a message if there’s a winning player
-                document.getElementById('gameStartedText1a').innerText = `Player ${winningPlayer}`;
-                document.getElementById('gameStartedText1b').innerText = 'You made it into the chamber of secrets, sit on your chair';
-            } else {
-                document.getElementById('gameStartedText1a').innerText = winningPlayer;
-                document.getElementById('gameStartedText1b').innerText = ''; // Clear the second line if it's a tie
-            }
-
-            roundEndMessage1.style.display = 'flex'; // Show the message
-
-            // Hide the message after 5 seconds of being shown
-            setTimeout(() => {
-                roundEndMessage1.style.display = 'none';
-            }, 5000);
-        });
 
         // Listen for support point updates from the server
         socket.on('supportPointUpdate', (data) => {
@@ -797,7 +565,7 @@
         // Update loop
         function update() {
             if (joystickActive) {
-                const moveDistance = 0.25; // Movement speed
+                const moveDistance = 0.1; // Movement speed
 
                 // Update player position based on the calculated direction
                 player.object3D.position.x += currentMoveDirection.x * moveDistance;
@@ -902,10 +670,11 @@
         });
 
 
-        socket.on('newCube', (cubePosition) => {
+        socket.on('newCube', (data) => {
 
-            console.log(cubePosition)
-            placeOtherCube(cubePosition)
+            console.log(data)
+
+            placeOtherCube(data)
             
         });
         
@@ -917,30 +686,85 @@
 
 
         // Function to place cube at the player's current position
-        function placeOtherCube(cubePosition) {
+        function placeOtherCube(data) {
+
+            const cubePosition = data.id
+            const textplacer   = data.position
+
+
             // Create the cube
             const cube = document.createElement("a-box");
-            cube.setAttribute("position", `${cubePosition.x + 11} ${cubePosition.y} ${cubePosition.z + 11}`);
+            cube.setAttribute("position", `${cubePosition.x + 28} ${cubePosition.y} ${cubePosition.z + 3}`);
             cube.setAttribute("color", "blue");
+            cube.setAttribute("scale", "0.5 0.5 0.5");
+            
+            // Create the text
+            const text = document.createElement("a-text");
+            text.setAttribute("value", textplacer); // Text to display
+            text.setAttribute("color", "red"); // Text color
+            text.setAttribute("align", "center"); // Align text to center
+            text.setAttribute("position", `${cubePosition.x + 28} ${cubePosition.y + 2} ${cubePosition.z + 3}`); // Position above the cube
+            text.setAttribute("side", "double"); // Render on both sides
+            text.setAttribute("scale", "2 2 2"); // Scale of the text
+
+            // Append the text to the grid
+            grid.appendChild(text);
+                    
             grid.appendChild(cube);
 
         }
 
 
-        // Function to place cube at the player's current position
         function placeCube() {
-            const camera = player.object3D;
-            const playerPos = new THREE.Vector3();
-            camera.getWorldPosition(playerPos); 
-
-            // Create the cube
-            const cube = document.createElement("a-box");
-            cube.setAttribute("position", `${playerPos.x + 11} ${playerPos.y} ${playerPos.z + 11}`);
-            cube.setAttribute("color", "blue");
-            grid.appendChild(cube);
-
-            socket.emit('CubePosition', playerPos)
+            // Reference modal and its elements
+            const textModal = document.getElementById("textModal");
+            const submitButton = document.getElementById("submitText");
+            const cubeTextInput = document.getElementById("cubeText");
+        
+            // Show the modal
+            textModal.style.display = "block";
+        
+            // Handle text submission
+            submitButton.onclick = function () {
+                const inputText = cubeTextInput.value.trim();
+        
+                if (inputText !== "") {
+                    // Hide the modal after submission
+                    textModal.style.display = "none";
+        
+                    // Get the player's current position
+                    const camera = player.object3D;
+                    const playerPos = new THREE.Vector3();
+                    camera.getWorldPosition(playerPos);
+        
+                    // Create the cube
+                    const cube = document.createElement("a-box");
+                    cube.setAttribute("position", `${playerPos.x + 28} ${playerPos.y} ${playerPos.z + 3}`);
+                    cube.setAttribute("color", "blue");
+                    cube.setAttribute("scale", "0.5 0.5 0.5");
+        
+                    // Create the text
+                    const text = document.createElement("a-text");
+                    text.setAttribute("value", inputText); // Use player's input
+                    text.setAttribute("color", "red");
+                    text.setAttribute("align", "center");
+                    text.setAttribute("position", `${playerPos.x + 28} ${playerPos.y + 1.5} ${playerPos.z + 3}`);
+                    text.setAttribute("side", "double");
+                    text.setAttribute("scale", "2 2 2");
+        
+                    // Append to the A-Frame scene
+                    grid.appendChild(cube);
+                    grid.appendChild(text);
+        
+                    // Emit position to the server
+                    socket.emit('CubePosition', { id: playerPos, position: inputText });
+                } else {
+                    alert("Please enter text for the cube!");
+                }
+            };
         }
+        
+        
 
         // Event listener for button click
         document.getElementById("placeButton").addEventListener("click", placeCube);

@@ -26,6 +26,13 @@
         <input type="text" id="playerNameInput" placeholder="Your Name">
         <button id="joinButton" onclick="submitName()">Join</button>
     </div>
+    <div id="textModal" 
+        style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 9999;">
+        <label for="cubeText">Enter text to display above the cube:</label>
+        <input id="cubeText" type="text" style="width: 100%; margin-top: 10px; padding: 8px;">
+        <button id="submitText" style="margin-top: 10px;">Submit</button>
+    </div>
+    
 
     <!-- Admin controls only for "camera_master" -->
     <div id="adminControls">
@@ -227,8 +234,10 @@
     </div>
 
 
+
+
     <!-- Button to trigger placement -->
-    <button id="placeButton">Place Your Idea</button>
+    <button id="placeButton">Drop Your Idea</button>
     
     <!-- A-Frame Scene -->
     <a-scene embedded>
@@ -245,9 +254,37 @@
         <a-entity id="grid"></a-entity>
         <a-entity id="grid2"></a-entity>
 
-        <!-- Lights -->
-        <a-light type="ambient" color="#FFF" intensity="1"></a-light>
-        <a-light type="directional" color="#FFF" intensity="1" position="0 2 0" castShadow="true"></a-light>
+        <!-- Ambient Light for overall illumination -->
+        <a-light type="ambient" color="#FFF" intensity="0.7"></a-light>
+
+        <!-- Directional Light for sunlight effect -->
+        <a-light 
+            type="directional" 
+            color="#FFF" 
+            intensity="5" 
+            position="-10 15 10" 
+            castShadow="true" 
+            shadow-mapSize="512"
+            shadow-camera-left="-20" 
+            shadow-camera-right="20"
+            shadow-camera-top="20" 
+            shadow-camera-bottom="-20">
+        </a-light>
+
+        <!-- Spotlight for focused highlights -->
+        <a-light 
+            type="spot" 
+            color="#FFD700" 
+            intensity="20" 
+            position="5 20 5" 
+            target="#target-object" 
+            angle="45" 
+            penumbra="0.5" 
+            decay="2" 
+            distance="50" 
+            castShadow="true">
+        </a-light>
+
 
 
         <!-- GLTF Model 1 -->
@@ -281,8 +318,9 @@
             gltf-model="models/Model.glb" 
             position="0 0 0" 
             rotation="0 0 0" 
-            scale="1 1 1" 
-            shadow="receive: true; cast: true" >
+            scale="0.1 0.1 0.1" 
+            shadow="receive: false; cast: false" 
+            material="shader: standard;">
         </a-entity>
 
 
